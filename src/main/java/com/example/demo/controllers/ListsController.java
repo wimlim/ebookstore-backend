@@ -58,16 +58,11 @@ public class ListsController {
         return "Record deleted successfully!";
     }
 
-    @PostMapping("/lists/purchase") // 处理POST请求
-    public String purchaseList(@RequestBody List purchasedList) {
-        // 购买记录
-        int amount = Integer.parseInt(purchasedList.getAmount());
-        int price = Integer.parseInt(purchasedList.getPrice());
-        int totalCost = amount * price;
-        System.out.println("Received purchase request: " + purchasedList.getTitle() + ", amount: " + purchasedList.getAmount() + ", price: " + purchasedList.getPrice() + ", total cost: " + totalCost);
-        return "You have successfully purchased " + purchasedList.getTitle() + " for a total cost of " + totalCost + "!";
+    @PostMapping("/lists/purchase")
+    public String purchaseList(@RequestBody String purchasedList) {
+        System.out.println("Received purchase request: " + purchasedList);
+        return "Purchase successfully!";
     }
-
 
     private List findListById(String id) {
         for (List l : lists) {

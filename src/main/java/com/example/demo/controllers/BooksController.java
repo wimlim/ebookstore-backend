@@ -6,6 +6,10 @@ import com.example.demo.entity.Book;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 
 @RestController
@@ -13,10 +17,38 @@ public class BooksController {
     @RequestMapping("/books")
     public String home() {
         ArrayList<Book> books = new ArrayList<>();
-        Book book1 = new Book(1L, "The Lord of the Rings", "J. R. R. Tolkien", "English", "1954-1955", "$150", "On Sale", "asdf");
-        Book book2 = new Book(2L, "The Lord of the Rings", "J. R. R. Tolkien", "English", "1954-1955", "$150", "On Sale", "asdf");
-        books.add(book1);
-        books.add(book2);
+        try{
+            // 创建与MySQL数据库的连接
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/bookstore?useSSL=false", "root", "sql.14159265");
+
+            // 创建要执行的SQL查询语句，用于从books表中获取所有数据
+            String sql = "SELECT * FROM books";
+            PreparedStatement statement = conn.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
+
+            // 遍历结果集，构建Book对象列表
+            while (resultSet.next()) {
+                long id = resultSet.getLong("id");
+                String title = resultSet.getString("title");
+                String author = resultSet.getString("author");
+                String language = resultSet.getString("language");
+                String published = resultSet.getString("published");
+                String price = resultSet.getString("price");
+                String status = resultSet.getString("status");
+                String description = resultSet.getString("description");
+
+                Book book = new Book(id, title, author, language, published, price, status, description);
+                books.add(book);
+            }
+
+            // 关闭连接
+            resultSet.close();
+            statement.close();
+            conn.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         ArrayList<JSONArray> booksJson = new ArrayList<JSONArray>();
         for (Book b : books) {
