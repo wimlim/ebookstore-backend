@@ -1,21 +1,29 @@
 package com.example.demo.entity;
 
-public class List {
+public class Item {
 
-    private String cover;
+    private String id;
     private String title;
     private String amount;
     private String price;
+    private String createtime;
 
-    public List(String cover, String title, String amount, String price) {
-        this.cover = cover;
+    public Item(String id, String title, String amount, String price) {
+        this.id = id;
         this.title = title;
         this.amount = amount;
         this.price = price;
     }
+    public Item(String id, String title, String amount, String price, String createtime) {
+        this.id = id;
+        this.title = title;
+        this.amount = amount;
+        this.price = price;
+        this.createtime = createtime;
+    }
 
-    public String getCover() { return cover; }
-    public void setCover(String cover) { this.cover = cover; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
@@ -26,11 +34,14 @@ public class List {
     public String getPrice() { return price; }
     public void setPrice(String price) { this.price = price; }
 
+    public String getCreatetime() { return createtime; }
+    public void setCreatetime(String createtime) { this.createtime = createtime; }
+
     @Override
     public String toString() {
         return String.format(
                 "{ cover: '%s', title: '%s', amount: '%s', price: '%s' }",
-                cover, title, amount, price);
+                id, title, amount, price);
     }
 
 }
