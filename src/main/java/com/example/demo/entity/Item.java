@@ -1,5 +1,9 @@
 package com.example.demo.entity;
 
+import com.alibaba.fastjson.JSONArray;
+
+import java.util.ArrayList;
+
 public class Item {
 
     private String id;
@@ -13,13 +17,6 @@ public class Item {
         this.title = title;
         this.amount = amount;
         this.price = price;
-    }
-    public Item(String id, String title, String amount, String price, String createtime) {
-        this.id = id;
-        this.title = title;
-        this.amount = amount;
-        this.price = price;
-        this.createtime = createtime;
     }
 
     public String getId() { return id; }
@@ -37,11 +34,13 @@ public class Item {
     public String getCreatetime() { return createtime; }
     public void setCreatetime(String createtime) { this.createtime = createtime; }
 
-    @Override
-    public String toString() {
-        return String.format(
-                "{ cover: '%s', title: '%s', amount: '%s', price: '%s' }",
-                id, title, amount, price);
+    public JSONArray toJson() {
+        ArrayList<String> arrayList = new ArrayList<String>();
+        arrayList.add(id);
+        arrayList.add(title);
+        arrayList.add(amount);
+        arrayList.add(price);
+        return (JSONArray) JSONArray.toJSON(arrayList);
     }
 
 }

@@ -10,6 +10,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Base64;
 
 @RestController
 public class BooksController {
@@ -27,7 +28,7 @@ public class BooksController {
 
             // 遍历结果集，构建Book对象列表
             while (resultSet.next()) {
-                long id = resultSet.getLong("id");
+                String id = resultSet.getString("id");
                 String title = resultSet.getString("title");
                 String author = resultSet.getString("author");
                 String language = resultSet.getString("language");
@@ -36,10 +37,12 @@ public class BooksController {
                 String status = resultSet.getString("status");
                 String description = resultSet.getString("description");
 
-                Book book = new Book(id, title, author, language, published, price, status, description);
+                byte[] coverData = resultSet.getBytes("cover");
+                String cover = Base64.getEncoder().encodeToString(coverData);
+
+                Book book = new Book(id, title, author, language, published, price, status, description, "");
                 books.add(book);
             }
-
             // 关闭连接
             resultSet.close();
             statement.close();
@@ -51,16 +54,7 @@ public class BooksController {
 
         ArrayList<JSONArray> booksJson = new ArrayList<JSONArray>();
         for (Book b : books) {
-            ArrayList<String> arrayList = new ArrayList<String>();
-            arrayList.add(String.valueOf(b.getId()));
-            arrayList.add(b.getTitle());
-            arrayList.add(b.getAuthor());
-            arrayList.add(b.getLanguage());
-            arrayList.add(b.getPublished());
-            arrayList.add(b.getPrice());
-            arrayList.add(b.getStatus());
-            arrayList.add(b.getDescription());
-            booksJson.add((JSONArray) JSONArray.toJSON(arrayList));
+            booksJson.add(b.toJson());
         }
         return JSONArray.toJSONString(booksJson, SerializerFeature.BrowserCompatible);
     }
@@ -87,7 +81,10 @@ public class BooksController {
                 String status = resultSet.getString("status");
                 String description = resultSet.getString("description");
 
-                book = new Book(Long.parseLong(id), title, author, language, published, price, status, description);
+                byte[] coverData = resultSet.getBytes("cover");
+                String cover = Base64.getEncoder().encodeToString(coverData);
+
+                book = new Book(id, title, author, language, published, price, status, description, "");
             }
 
             // 关闭连接
@@ -99,16 +96,7 @@ public class BooksController {
             e.printStackTrace();
         }
         ArrayList<JSONArray> booksJson = new ArrayList<JSONArray>();
-        ArrayList<String> arrayList = new ArrayList<String>();
-        arrayList.add(String.valueOf(book.getId()));
-        arrayList.add(book.getTitle());
-        arrayList.add(book.getAuthor());
-        arrayList.add(book.getLanguage());
-        arrayList.add(book.getPublished());
-        arrayList.add(book.getPrice());
-        arrayList.add(book.getStatus());
-        arrayList.add(book.getDescription());
-        booksJson.add((JSONArray) JSONArray.toJSON(arrayList));
+        booksJson.add(book.toJson());
         return JSONArray.toJSONString(booksJson, SerializerFeature.BrowserCompatible);
     }
 }

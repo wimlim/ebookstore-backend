@@ -56,12 +56,7 @@ public class OrdersController {
             ArrayList<JSONArray> itemListJson = new ArrayList<>();
             for (Item i: items) {
                 if(i.getCreatetime().equals(t.toString())) {
-                    JSONArray itemJson = new JSONArray();
-                    itemJson.add(String.valueOf(i.getId()));
-                    itemJson.add(i.getTitle());
-                    itemJson.add(String.valueOf(i.getAmount()));
-                    itemJson.add(String.valueOf(i.getPrice()));
-                    itemListJson.add(itemJson);
+                    itemListJson.add(i.toJson());
                 }
             }
             timestampJson.put("timestamp", t.toString());

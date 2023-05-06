@@ -45,12 +45,7 @@ public class ListsController {
 
         ArrayList<JSONArray> listJson = new ArrayList<>();
         for (Item i: items) {
-            ArrayList<String> arrayList = new ArrayList<>();
-            arrayList.add(String.valueOf(i.getId()));
-            arrayList.add(i.getTitle());
-            arrayList.add(String.valueOf(i.getAmount()));
-            arrayList.add(String.valueOf(i.getPrice()));
-            listJson.add((JSONArray) JSONArray.toJSON(arrayList));
+            listJson.add(i.toJson());
         }
         return JSONArray.toJSONString(listJson, SerializerFeature.BrowserCompatible);
     }
@@ -154,7 +149,6 @@ public class ListsController {
                                     deleteListStatement.setLong(1, id);
                                     deleteListStatement.executeUpdate();
                                 }
-
                                 return "Purchase successfully!";
                             }
                             else {

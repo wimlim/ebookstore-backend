@@ -1,8 +1,13 @@
 package com.example.demo.entity;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.serializer.SerializerFeature;
+
+import java.util.ArrayList;
+
 public class Book {
 
-    private Long id;
+    private String id;
 
     private String title;
     private String author;
@@ -11,8 +16,9 @@ public class Book {
     private String price;
     private String status;
     private String description;
+    private String cover;
 
-    public Book(Long id, String title, String author, String language, String published, String price, String status, String description) {
+    public Book(String id, String title, String author, String language, String published, String price, String status, String description, String cover) {
         this.id = id;
         this.title = title;
         this.author = author;
@@ -21,13 +27,13 @@ public class Book {
         this.price = price;
         this.status = status;
         this.description = description;
+        this.cover = cover;
     }
 
-
-    public Long getId() {
+    public String getId() {
         return id;
     }
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -72,11 +78,24 @@ public class Book {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    @Override
-    public String toString() {
-        return String.format(
-                "Book[id=%d, title='%s', author='%s', language='%s', published='%s', sales='%s']",
-                id, title, author, language, published, price);
+    public String getCover() {
+        return cover;
+    }
+    public void setCover(String cover) {
+        this.cover = cover;
     }
 
+    public JSONArray toJson() {
+        ArrayList<String> arrayList = new ArrayList<String>();
+        arrayList.add(id);
+        arrayList.add(title);
+        arrayList.add(author);
+        arrayList.add(language);
+        arrayList.add(published);
+        arrayList.add(price);
+        arrayList.add(status);
+        arrayList.add(description);
+        arrayList.add(cover);
+        return (JSONArray) JSONArray.toJSON(arrayList);
+    }
 }
