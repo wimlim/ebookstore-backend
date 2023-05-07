@@ -19,17 +19,7 @@ public class Item {
         this.price = price;
     }
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-
-    public String getAmount() { return amount; }
-    public void setAmount(String amount) { this.amount = amount; }
-
-    public String getPrice() { return price; }
-    public void setPrice(String price) { this.price = price; }
 
     public String getCreatetime() { return createtime; }
     public void setCreatetime(String createtime) { this.createtime = createtime; }

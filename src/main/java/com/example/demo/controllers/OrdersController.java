@@ -66,12 +66,10 @@ public class OrdersController {
         return timestampsJson.toJSONString();
     }
 
-    @PutMapping("/orders/{id}")
-    public String addOrder(@PathVariable Long id, @RequestParam Long book_id) {
+    @PutMapping("/orders/{userId}")
+    public String addOrder(@PathVariable Long userId, @RequestParam Long bookId) {
         // Create a connection to MySQL database
         try(Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/bookstore?useSSL=false", "root", "sql.14159265")) {
-
-            // Generate a unique id for the new order
             int nextId = 0;
             PreparedStatement stmt = conn.prepareStatement("SELECT MAX(id) FROM orders");
             ResultSet rs = stmt.executeQuery();
@@ -83,7 +81,7 @@ public class OrdersController {
             String insertOrderSql = "INSERT INTO orders (id, user_id, createtime) VALUES (?, ?, ?)";
             PreparedStatement orderStatement = conn.prepareStatement(insertOrderSql);
             orderStatement.setLong(1, nextId);
-            orderStatement.setLong(2, id);
+            orderStatement.setLong(2, userId);
             orderStatement.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
             orderStatement.executeUpdate();
 
@@ -91,7 +89,7 @@ public class OrdersController {
             String insertOrderItemSql = "INSERT INTO orderitems (order_id, book_id, num) VALUES (?, ?, ?)";
             PreparedStatement orderItemStatement = conn.prepareStatement(insertOrderItemSql);
             orderItemStatement.setLong(1, nextId);
-            orderItemStatement.setLong(2, book_id);
+            orderItemStatement.setLong(2, bookId);
             orderItemStatement.setInt(3, 1);
             orderItemStatement.executeUpdate();
 

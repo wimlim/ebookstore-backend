@@ -10,7 +10,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.Base64;
 
 @RestController
 public class BooksController {
@@ -37,10 +36,7 @@ public class BooksController {
                 String status = resultSet.getString("status");
                 String description = resultSet.getString("description");
 
-                byte[] coverData = resultSet.getBytes("cover");
-                String cover = Base64.getEncoder().encodeToString(coverData);
-
-                Book book = new Book(id, title, author, language, published, price, status, description, "");
+                Book book = new Book(id, title, author, language, published, price, status, description);
                 books.add(book);
             }
             // 关闭连接
@@ -81,10 +77,7 @@ public class BooksController {
                 String status = resultSet.getString("status");
                 String description = resultSet.getString("description");
 
-                byte[] coverData = resultSet.getBytes("cover");
-                String cover = Base64.getEncoder().encodeToString(coverData);
-
-                book = new Book(id, title, author, language, published, price, status, description, "");
+                book = new Book(id, title, author, language, published, price, status, description);
             }
 
             // 关闭连接

@@ -85,14 +85,14 @@ public class ListsController {
         }
     }
 
-    @DeleteMapping("/lists/{id}")
-    public String deleteList(@PathVariable Long id, @RequestParam Long book_id) {
+    @DeleteMapping("/lists/{userId}")
+    public String deleteList(@PathVariable Long userId, @RequestParam Long bookId) {
         try{
             Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/bookstore?useSSL=false", "root", "sql.14159265");
             String sql = "DELETE FROM listitems WHERE user_id = ? AND book_id = ?";
             PreparedStatement statement = conn.prepareStatement(sql);
-            statement.setLong(1, id);
-            statement.setLong(2, book_id);
+            statement.setLong(1, userId);
+            statement.setLong(2, bookId);
             int count = statement.executeUpdate();
 
             statement.close();
@@ -109,13 +109,13 @@ public class ListsController {
         }
     }
 
-    @PostMapping("/lists/{id}")
-    public String purchaseList(@PathVariable Long id) {
+    @PostMapping("/lists/{userId}")
+    public String purchaseList(@PathVariable Long userId) {
         try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/bookstore?useSSL=false", "root", "sql.14159265")) {
             // Retrieve all items in the user's list
             String sql = "SELECT * FROM listitems WHERE user_id = ?";
             try (PreparedStatement statement = conn.prepareStatement(sql)) {
-                statement.setLong(1, id);
+                statement.setLong(1, userId);
                 try (ResultSet resultSet = statement.executeQuery()) {
                     if (!resultSet.next()) {
                         return "No record found!";
@@ -124,7 +124,7 @@ public class ListsController {
                         // Create a new order
                         sql = "INSERT INTO orders(userid, createtime) VALUES (?, NOW())";
                         try (PreparedStatement insertOrderStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                            insertOrderStatement.setLong(1, id);
+                            insertOrderStatement.setLong(1, userId);
                             insertOrderStatement.executeUpdate();
                             ResultSet generatedKeys = insertOrderStatement.getGeneratedKeys();
                             if (generatedKeys.next()) {
@@ -146,7 +146,7 @@ public class ListsController {
                                 // Delete all items in the user's list
                                 sql = "DELETE FROM listitems WHERE user_id = ?";
                                 try (PreparedStatement deleteListStatement = conn.prepareStatement(sql)) {
-                                    deleteListStatement.setLong(1, id);
+                                    deleteListStatement.setLong(1, userId);
                                     deleteListStatement.executeUpdate();
                                 }
                                 return "Purchase successfully!";

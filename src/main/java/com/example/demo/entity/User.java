@@ -16,20 +16,6 @@ public class User {
         this.notes = notes;
     }
 
-    public String getFirstname() { return firstname; }
-    public void setFirstname() {
-         this.firstname = firstname;
-    }
-    public String getLastname() { return lastname; }
-    public void setLastname() {
-        this.lastname = lastname;
-    }    public String getTwitter() { return twitter; }
-    public void setTwitter() {
-        this.twitter = twitter;
-    }    public String getNotes() { return notes; }
-    public void setNotes() {
-        this.notes = notes;
-    }
     public JSONArray toJson() {
         ArrayList<String> arrayList = new ArrayList<String>();
         arrayList.add(firstname);
