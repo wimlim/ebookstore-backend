@@ -3,46 +3,22 @@ package com.example.demo.controllers;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.example.demo.entity.Item;
+import com.example.demo.services.ListService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.*;
 import java.util.ArrayList;
 
 @RestController
+@RequestMapping("/lists")
 public class ListsController {
-    @RequestMapping("/lists/{userid}")
-    public String getList(@PathVariable("userid") long userId) {
-        ArrayList<Item> items = new ArrayList<>();
 
-        try{
-            // 创建与MySQL数据库的连接
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/bookstore?useSSL=false", "root", "sql.14159265");
+    @Autowired
+    private ListService listService;
 
-            // 创建要执行的SQL查询语句，用于从listitems和books表中获取所有数据
-            String sql = "SELECT books.id, books.title, listitems.amount, books.price FROM listitems JOIN books ON listitems.book_id = books.id WHERE listitems.user_id = ?";
-            PreparedStatement statement = conn.prepareStatement(sql);
-            statement.setLong(1, userId);
-            ResultSet resultSet = statement.executeQuery();
-
-            // 遍历结果集，构建list对象列表
-            while (resultSet.next()) {
-                long id = resultSet.getLong("id");
-                String title = resultSet.getString("title");
-                int amount = resultSet.getInt("amount");
-                double price = resultSet.getDouble("price");
-                Item item = new Item(String.valueOf(id), title, String.valueOf(amount), String.valueOf(price));
-                items.add(item);
-            }
-
-            // 关闭连接
-            resultSet.close();
-            statement.close();
-            conn.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+    @GetMapping("/{userId}")
+    public String getList(@PathVariable("userId") long userId) {
+        ArrayList<Item> items = listService.getList(userId);
         ArrayList<JSONArray> listJson = new ArrayList<>();
         for (Item i: items) {
             listJson.add(i.toJson());
@@ -50,116 +26,29 @@ public class ListsController {
         return JSONArray.toJSONString(listJson, SerializerFeature.BrowserCompatible);
     }
 
-    @PutMapping("/lists/{userId}")
-    public String updateList(@PathVariable Long userId, @RequestParam Long bookId, @RequestParam Long amount) {
-        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/bookstore?useSSL=false", "root", "sql.14159265")) {
-            String sql = "SELECT * FROM listitems WHERE user_id = ? AND book_id = ?";
-            try (PreparedStatement statement = conn.prepareStatement(sql)) {
-                statement.setLong(1, userId);
-                statement.setLong(2, bookId);
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    if (resultSet.next()) {
-                        sql = "UPDATE listitems SET amount=? WHERE user_id=? AND book_id=?";
-                        try (PreparedStatement updateStatement = conn.prepareStatement(sql)) {
-                            updateStatement.setLong(1, amount);
-                            updateStatement.setLong(2, userId);
-                            updateStatement.setLong(3, bookId);
-                            updateStatement.executeUpdate();
-                            return "Record updated successfully!";
-                        }
-                    } else {
-                        sql = "INSERT INTO listitems(user_id, book_id, amount) VALUES (?, ?, ?)";
-                        try (PreparedStatement insertStatement = conn.prepareStatement(sql)) {
-                            insertStatement.setLong(1, userId);
-                            insertStatement.setLong(2, bookId);
-                            insertStatement.setLong(3, amount);
-                            insertStatement.executeUpdate();
-                            return "Record created successfully!";
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+    @PutMapping("/{userId}")
+    public String updateList(@PathVariable("userId") long userId, @RequestParam("bookId") long bookId, @RequestParam("amount") long amount) {
+        if (listService.updateItem(userId, bookId, amount)) {
+            return "Record updated successfully!";
+        } else {
             return "Error occurred while updating the record!";
         }
     }
 
-    @DeleteMapping("/lists/{userId}")
-    public String deleteList(@PathVariable Long userId, @RequestParam Long bookId) {
-        try{
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/bookstore?useSSL=false", "root", "sql.14159265");
-            String sql = "DELETE FROM listitems WHERE user_id = ? AND book_id = ?";
-            PreparedStatement statement = conn.prepareStatement(sql);
-            statement.setLong(1, userId);
-            statement.setLong(2, bookId);
-            int count = statement.executeUpdate();
-
-            statement.close();
-            conn.close();
-
-            if (count > 0) {
-                return "Record deleted successfully!";
-            } else {
-                return "No record found!";
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+    @DeleteMapping("/{userId}")
+    public String deleteList(@PathVariable("userId") long userId, @RequestParam("bookId") long bookId) {
+        if (listService.deleteItem(userId, bookId)) {
+            return "Record deleted successfully!";
+        } else {
             return "Error occurred while deleting the record!";
         }
     }
 
-    @PostMapping("/lists/{userId}")
-    public String purchaseList(@PathVariable Long userId) {
-        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/bookstore?useSSL=false", "root", "sql.14159265")) {
-            // Retrieve all items in the user's list
-            String sql = "SELECT * FROM listitems WHERE user_id = ?";
-            try (PreparedStatement statement = conn.prepareStatement(sql)) {
-                statement.setLong(1, userId);
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    if (!resultSet.next()) {
-                        return "No record found!";
-                    }
-                    else {
-                        // Create a new order
-                        sql = "INSERT INTO orders(userid, createtime) VALUES (?, NOW())";
-                        try (PreparedStatement insertOrderStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                            insertOrderStatement.setLong(1, userId);
-                            insertOrderStatement.executeUpdate();
-                            ResultSet generatedKeys = insertOrderStatement.getGeneratedKeys();
-                            if (generatedKeys.next()) {
-                                long orderId = generatedKeys.getLong(1);
-
-                                // Insert new order items for each item in the user's list
-                                do {
-                                    long bookId = resultSet.getLong("book_id");
-                                    int amount = resultSet.getInt("amount");
-                                    sql = "INSERT INTO orderitems(order_id, book_id, num) VALUES (?, ?, ?)";
-                                    try (PreparedStatement insertOrderItemStatement = conn.prepareStatement(sql)) {
-                                        insertOrderItemStatement.setLong(1, orderId);
-                                        insertOrderItemStatement.setLong(2, bookId);
-                                        insertOrderItemStatement.setInt(3, amount);
-                                        insertOrderItemStatement.executeUpdate();
-                                    }
-                                } while (resultSet.next());
-
-                                // Delete all items in the user's list
-                                sql = "DELETE FROM listitems WHERE user_id = ?";
-                                try (PreparedStatement deleteListStatement = conn.prepareStatement(sql)) {
-                                    deleteListStatement.setLong(1, userId);
-                                    deleteListStatement.executeUpdate();
-                                }
-                                return "Purchase successfully!";
-                            }
-                            else {
-                                return "Failed to create order!";
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+    @PostMapping("/{userId}")
+    public String purchaseList(@PathVariable("userId") long userId) {
+        if (listService.purchaseList(userId)) {
+            return "Purchase successfully!";
+        } else {
             return "Error occurred while purchasing the items!";
         }
     }
