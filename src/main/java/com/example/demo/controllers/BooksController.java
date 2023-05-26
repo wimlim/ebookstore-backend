@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/books")
@@ -21,19 +21,13 @@ public class BooksController {
 
     @GetMapping
     public String getBooks() {
-        ArrayList<Book> books = bookService.getAllBooks();
-        ArrayList<JSONArray> booksJson = new ArrayList<JSONArray>();
-        for (Book b : books) {
-            booksJson.add(b.toJson());
-        }
-        return JSONArray.toJSONString(booksJson, SerializerFeature.BrowserCompatible);
+        List<Book> books = bookService.getAllBooks();
+        return JSONArray.toJSONString(books, SerializerFeature.BrowserCompatible);
     }
 
     @GetMapping("/{id}")
     public String getBook(@PathVariable String id) {
         Book book = bookService.getBookById(id);
-        ArrayList<JSONArray> booksJson = new ArrayList<JSONArray>();
-        booksJson.add(book.toJson());
-        return JSONArray.toJSONString(booksJson, SerializerFeature.BrowserCompatible);
+        return JSONArray.toJSONString(book, SerializerFeature.BrowserCompatible);
     }
 }
