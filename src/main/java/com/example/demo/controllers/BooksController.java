@@ -21,19 +21,11 @@ public class BooksController {
 
     @GetMapping
     public String getBooks() {
-        ArrayList<Book> books = bookService.getAllBooks();
-        ArrayList<JSONArray> booksJson = new ArrayList<JSONArray>();
-        for (Book b : books) {
-            booksJson.add(b.toJson());
-        }
-        return JSONArray.toJSONString(booksJson, SerializerFeature.BrowserCompatible);
+        return bookService.getAllBooks();
     }
 
     @GetMapping("/{id}")
     public String getBook(@PathVariable String id) {
-        Book book = bookService.getBookById(id);
-        ArrayList<JSONArray> booksJson = new ArrayList<JSONArray>();
-        booksJson.add(book.toJson());
-        return JSONArray.toJSONString(booksJson, SerializerFeature.BrowserCompatible);
+        return bookService.getBookById(id);
     }
 }
