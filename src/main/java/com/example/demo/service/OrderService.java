@@ -2,61 +2,67 @@ package com.example.demo.service;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.example.demo.entity.Item;
+import com.example.demo.entity.Book;
+import com.example.demo.entity.Order;
+import com.example.demo.entity.OrderItem;
+import com.example.demo.repository.BookRepository;
+import com.example.demo.repository.OrderItemRepository;
+import com.example.demo.repository.OrderRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.sql.*;
-import java.util.ArrayList;
+import java.util.*;
 
 @Service
 public class OrderService {
+    private final OrderRepository orderRepository;
+    private final BookRepository bookRepository;
+    private final OrderItemRepository orderItemRepository;
+
+    @Autowired
+    public OrderService(OrderRepository orderRepository, BookRepository bookRepository, OrderItemRepository orderItemRepository) {
+        this.orderRepository = orderRepository;
+        this.bookRepository = bookRepository;
+        this.orderItemRepository = orderItemRepository;
+    }
+
+
     public JSONArray getOrderItemsWithTimestamps(long userId) {
         JSONArray timestampsJson = new JSONArray();
-        ArrayList<Item> items = new ArrayList<>();
-        ArrayList<Timestamp> timestamps = new ArrayList<>();
+        List<Order> orders = orderRepository.findByUserId(userId);
+        Map<Long, List<OrderItem>> orderItemsMap = new HashMap<>();
 
-        try {
-            // 创建与 MySQL 数据库的连接
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/bookstore?useSSL=false", "root", "sql.14159265");
-
-            // 查询基于用户 ID 从 orders 和 orderitems 表中检索所有数据
-            String sql = "SELECT DISTINCT orders.createtime, books.id, books.title, orderitems.num, books.price FROM orders JOIN orderitems ON orders.id = orderitems.order_id JOIN books ON orderitems.book_id = books.id WHERE orders.user_id = ?";
-            PreparedStatement statement = conn.prepareStatement(sql);
-            statement.setLong(1, userId);
-            ResultSet resultSet = statement.executeQuery();
-
-            while (resultSet.next()) {
-                // 从结果集中提取数据
-                Timestamp createTime = resultSet.getTimestamp("createtime");
-                if (!timestamps.contains(createTime)) {
-                    timestamps.add(createTime);
+        for (Order order : orders) {
+            List<OrderItem> orderItems = order.getOrderItems();
+            for (OrderItem orderItem : orderItems) {
+                long timestamp = order.getCreateTime().getTime();
+                if (orderItemsMap.containsKey(timestamp)) {
+                    orderItemsMap.get(timestamp).add(orderItem);
+                } else {
+                    List<OrderItem> itemList = new ArrayList<>();
+                    itemList.add(orderItem);
+                    orderItemsMap.put(timestamp, itemList);
                 }
-                long id = resultSet.getLong("id");
-                String title = resultSet.getString("title");
-                int amount = resultSet.getInt("num");
-                double price = resultSet.getDouble("price");
-                Item item = new Item(String.valueOf(id), title, String.valueOf(amount), String.valueOf(price));
-                item.setCreatetime(createTime.toString());
-                items.add(item);
             }
-
-            // 关闭连接
-            resultSet.close();
-            statement.close();
-            conn.close();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
 
-        for (Timestamp t : timestamps) {
+        for (Map.Entry<Long, List<OrderItem>> entry : orderItemsMap.entrySet()) {
+            long timestamp = entry.getKey();
+            List<OrderItem> itemList = entry.getValue();
+
             JSONObject timestampJson = new JSONObject();
             JSONArray itemListJson = new JSONArray();
-            for (Item i : items) {
-                if (i.getCreatetime().equals(t.toString())) {
-                    itemListJson.add(i.toJson());
-                }
+
+            for (OrderItem item : itemList) {
+                JSONObject itemJson = new JSONObject();
+                itemJson.put("bookId", item.getBook().getId());
+                itemJson.put("title", item.getBook().getTitle());
+                itemJson.put("num", item.getNum());
+                itemJson.put("price", item.getBook().getPrice());
+                itemListJson.add(itemJson);
             }
-            timestampJson.put("timestamp", t.toString());
+
+            timestampJson.put("timestamp", timestamp);
             timestampJson.put("items", itemListJson);
             timestampsJson.add(timestampJson);
         }
@@ -66,34 +72,47 @@ public class OrderService {
 
 
     public boolean addOrderItem(Long userId, Long bookId) {
-        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/bookstore?useSSL=false", "root", "sql.14159265")) {
-            int nextId = 0;
-            PreparedStatement stmt = conn.prepareStatement("SELECT MAX(id) FROM orders");
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                nextId = rs.getInt(1) + 1;
+        /*
+        try {
+            // 获取用户对象
+            User user = userRepository.findById(userId);
+
+            // 获取图书对象
+            Optional<Book> optionalBook = bookRepository.findById(bookId.intValue());
+            if (optionalBook.isEmpty()) {
+                // 处理图书不存在的情况
+                return false;
             }
+            Book book = optionalBook.get();
 
-            // Insert into orders table
-            String insertOrderSql = "INSERT INTO orders (id, user_id, createtime) VALUES (?, ?, ?)";
-            PreparedStatement orderStatement = conn.prepareStatement(insertOrderSql);
-            orderStatement.setLong(1, nextId);
-            orderStatement.setLong(2, userId);
-            orderStatement.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
-            orderStatement.executeUpdate();
+            // 创建订单项
+            OrderItem orderItem = new OrderItem();
+            orderItem.setUser(user);
+            orderItem.setBook(book);
+            orderItem.setNum(1); // 设置数量，这里假设默认为1
 
-            // Insert into orderitems table
-            String insertOrderItemSql = "INSERT INTO orderitems (order_id, book_id, num) VALUES (?, ?, ?)";
-            PreparedStatement orderItemStatement = conn.prepareStatement(insertOrderItemSql);
-            orderItemStatement.setLong(1, nextId);
-            orderItemStatement.setLong(2, bookId);
-            orderItemStatement.setInt(3, 1);
-            orderItemStatement.executeUpdate();
+            // 创建新订单
+            Order order = new Order();
+            order.setUser(user);
+            order.setCreateTime(new Date());
+            order.setOrderItems(new ArrayList<>());
+
+            // 添加订单项到订单
+            order.getOrderItems().add(orderItem);
+            orderItem.setOrder(order);
+
+            // 保存订单和订单项
+            orderRepository.save(order);
+            orderItemRepository.save(orderItem);
 
             return true;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
+            */
+        return true;
     }
+
+
 }
