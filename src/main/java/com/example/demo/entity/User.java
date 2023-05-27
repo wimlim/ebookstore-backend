@@ -1,27 +1,38 @@
 package com.example.demo.entity;
-
 import com.alibaba.fastjson.JSONArray;
 
-import java.util.ArrayList;
+import javax.persistence.*;
 
+@Entity
+@Table(name = "users")
 public class User {
-    private String firstname;
-    private String lastname;
-    private String twitter;
-    private String notes;
-    public User(String firstname, String lastname, String twitter, String notes) {
-        this.firstname = firstname;
-        this.lastname = lastname;
-        this.twitter = twitter;
-        this.notes = notes;
-    }
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    public JSONArray toJson() {
-        ArrayList<String> arrayList = new ArrayList<String>();
-        arrayList.add(firstname);
-        arrayList.add(lastname);
-        arrayList.add(twitter);
-        arrayList.add(notes);
-        return (JSONArray) JSONArray.toJSON(arrayList);
+    private String firstname;
+
+    private String lastname;
+
+    private String twitter;
+
+    private String notes;
+    private String account;
+    private String password;
+
+    public Long getId() {
+        return id;
+    }
+    public String getAccount() {
+        return account;
+    }
+    public void setAccount(String account) {
+        this.account = account;
+    }
+    public String getPassword() {
+        return password;
+    }
+    public void setPassword(String password) {
+        this.password = password;
     }
 }
