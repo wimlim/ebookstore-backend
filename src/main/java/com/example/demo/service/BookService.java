@@ -1,4 +1,4 @@
-package com.example.demo.services;
+package com.example.demo.service;
 
 import com.example.demo.entity.Book;
 import org.springframework.stereotype.Service;
@@ -9,7 +9,6 @@ import javax.persistence.TypedQuery;
 import java.util.List;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 
 // ...
 
@@ -54,6 +53,14 @@ public class BookService {
             bookJson.put("status", book.getStatus());
             bookJson.put("description", book.getDescription());
             return bookJson.toJSONString();
+        }
+        return null;
+    }
+
+    public byte[] getBookCoverData(String id) {
+        Book book = entityManager.find(Book.class, Integer.parseInt(id));
+        if (book != null) {
+            return book.getCover();
         }
         return null;
     }

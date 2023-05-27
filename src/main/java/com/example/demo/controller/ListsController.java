@@ -1,9 +1,9 @@
-package com.example.demo.controllers;
+package com.example.demo.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.example.demo.entity.Item;
-import com.example.demo.services.ListService;
+import com.example.demo.service.ListService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
