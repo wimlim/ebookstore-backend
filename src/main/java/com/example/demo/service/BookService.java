@@ -1,27 +1,26 @@
 package com.example.demo.service;
 
 import com.example.demo.entity.Book;
+import com.example.demo.repository.BookRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
 import java.util.List;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
-// ...
-
 @Service
 public class BookService {
 
-    @PersistenceContext
-    private EntityManager entityManager;
+    private final BookRepository bookRepository;
+
+    @Autowired
+    public BookService(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
+    }
 
     public String getAllBooks() {
-        String jpql = "SELECT b FROM Book b";
-        TypedQuery<Book> query = entityManager.createQuery(jpql, Book.class);
-        List<Book> books = query.getResultList();
+        List<Book> books = bookRepository.findAll();
 
         JSONArray booksJson = new JSONArray();
         for (Book book : books) {
@@ -40,7 +39,8 @@ public class BookService {
     }
 
     public String getBookById(String id) {
-        Book book = entityManager.find(Book.class, Integer.parseInt(id));
+        int bookId = Integer.parseInt(id);
+        Book book = bookRepository.findById(bookId).orElse(null);
 
         if (book != null) {
             JSONObject bookJson = new JSONObject();
@@ -58,7 +58,9 @@ public class BookService {
     }
 
     public byte[] getBookCoverData(String id) {
-        Book book = entityManager.find(Book.class, Integer.parseInt(id));
+        int bookId = Integer.parseInt(id);
+        Book book = bookRepository.findById(bookId).orElse(null);
+
         if (book != null) {
             return book.getCover();
         }
