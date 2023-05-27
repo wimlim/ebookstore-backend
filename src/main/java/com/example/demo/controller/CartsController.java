@@ -3,7 +3,7 @@ package com.example.demo.controller;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.example.demo.entity.Item;
-import com.example.demo.service.ListService;
+import com.example.demo.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,14 +11,14 @@ import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/lists")
-public class ListsController {
+public class CartsController {
 
     @Autowired
-    private ListService listService;
+    private CartService cartService;
 
     @GetMapping("/{userId}")
     public String getList(@PathVariable("userId") long userId) {
-        ArrayList<Item> items = listService.getList(userId);
+        ArrayList<Item> items = cartService.getList(userId);
         ArrayList<JSONArray> listJson = new ArrayList<>();
         for (Item i: items) {
             listJson.add(i.toJson());
@@ -28,7 +28,7 @@ public class ListsController {
 
     @PutMapping("/{userId}")
     public String updateList(@PathVariable("userId") long userId, @RequestParam("bookId") long bookId, @RequestParam("amount") long amount) {
-        if (listService.updateItem(userId, bookId, amount)) {
+        if (cartService.updateItem(userId, bookId, amount)) {
             return "Record updated successfully!";
         } else {
             return "Error occurred while updating the record!";
@@ -37,7 +37,7 @@ public class ListsController {
 
     @DeleteMapping("/{userId}")
     public String deleteList(@PathVariable("userId") long userId, @RequestParam("bookId") long bookId) {
-        if (listService.deleteItem(userId, bookId)) {
+        if (cartService.deleteItem(userId, bookId)) {
             return "Record deleted successfully!";
         } else {
             return "Error occurred while deleting the record!";
@@ -46,7 +46,7 @@ public class ListsController {
 
     @PostMapping("/{userId}")
     public String purchaseList(@PathVariable("userId") long userId) {
-        if (listService.purchaseList(userId)) {
+        if (cartService.purchaseList(userId)) {
             return "Purchase successfully!";
         } else {
             return "Error occurred while purchasing the items!";

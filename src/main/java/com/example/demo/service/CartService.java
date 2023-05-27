@@ -7,7 +7,7 @@ import java.sql.*;
 import java.util.ArrayList;
 
 @Service
-public class ListService {
+public class CartService {
 
     private static final String URL = "jdbc:mysql://localhost/bookstore?useSSL=false";
     private static final String USERNAME = "root";
