@@ -35,4 +35,18 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public String getFirstName() {
+        return firstname;
+    }
+    public String getLastName() {
+        return lastname;
+    }
+    public String getTwitter() {
+        return twitter;
+    }
+    public String getNotes() {
+        return notes;
+    }
+
 }

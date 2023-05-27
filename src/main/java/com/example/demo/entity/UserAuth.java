@@ -14,9 +14,9 @@ public class UserAuth {
     private User user;
 
     @Column(unique = true)
-    private String token;
+    private int token;
 
-    public String getToken() {
+    public int getToken() {
         return token;
     }
 

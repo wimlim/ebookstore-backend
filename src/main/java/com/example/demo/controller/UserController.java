@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 public class UserController {
     private final UserService userService;
 
@@ -23,8 +23,8 @@ public class UserController {
         return userService.login(account, password);
     }
 
-    @GetMapping("/profile/{userauth}")
-    public String getUserProfile(@PathVariable("userauth") String userauth) {
-        return userService.getUserProfile(userauth);
+    @GetMapping("/profile/{token}")
+    public String getUserProfile(@PathVariable("token") Long token) {
+        return userService.getUserProfile(token);
     }
 }

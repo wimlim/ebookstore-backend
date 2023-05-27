@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.example.demo.entity.User;
 import com.example.demo.entity.UserAuth;
@@ -9,6 +10,7 @@ import com.example.demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -29,25 +31,29 @@ public class UserService {
             Optional<UserAuth> userAuthOptional = userAuthRepository.findByUser(user);
             if (userAuthOptional.isPresent()) {
                 UserAuth userAuth = userAuthOptional.get();
-                return userAuth.getToken();
+                return Integer.toString(userAuth.getToken());
             }
         }
         return "";
     }
 
-    public String getUserProfile(String token) {
-        Optional<UserAuth> userAuthOptional = userAuthRepository.findByToken(token);
+    public String getUserProfile(Long token) {
+        Optional<UserAuth> userAuthOptional = userAuthRepository.findByToken(token.intValue());
         if (userAuthOptional.isPresent()) {
             UserAuth userAuth = userAuthOptional.get();
             User user = userAuth.getUser();
-            return convertUserToJsonString(user);
+
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("firstname", user.getFirstName());
+            jsonObject.put("lastname", user.getLastName());
+            jsonObject.put("twitter", user.getTwitter());
+            jsonObject.put("notes", user.getNotes());
+
+            return jsonObject.toString();
         } else {
-            return "User not found";
+            return "";
         }
     }
 
-    private String convertUserToJsonString(User user) {
-        User[] users = {user};
-        return JSONArray.toJSONString(users, SerializerFeature.BrowserCompatible);
-    }
+
 }
