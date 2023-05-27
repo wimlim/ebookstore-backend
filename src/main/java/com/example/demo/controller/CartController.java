@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/lists")
-public class CartsController {
+public class CartController {
 
     @Autowired
     private CartService cartService;

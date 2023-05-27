@@ -13,7 +13,7 @@ import org.springframework.http.HttpHeaders;
 
 @RestController
 @RequestMapping("/books")
-public class BooksController {
+public class BookController {
 
     @Autowired
     private BookService bookService;
