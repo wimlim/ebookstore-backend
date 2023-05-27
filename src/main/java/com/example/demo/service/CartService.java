@@ -13,13 +13,13 @@ public class CartService {
     private static final String USERNAME = "root";
     private static final String PASSWORD = "sql.14159265";
 
-    public ArrayList<Item> getList(long userId) {
+    public ArrayList<Item> getList(long token) {
         ArrayList<Item> items = new ArrayList<>();
 
         try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
-            String sql = "SELECT books.id, books.title, listitems.amount, books.price FROM listitems JOIN books ON listitems.book_id = books.id WHERE listitems.user_id = ?";
+            String sql = "SELECT books.id, books.title, listitems.amount, books.price FROM listitems JOIN books ON listitems.book_id = books.id WHERE listitems.user_id = (SELECT user_id FROM userauths WHERE token = ?)";
             try (PreparedStatement statement = conn.prepareStatement(sql)) {
-                statement.setLong(1, userId);
+                statement.setLong(1, token);
                 try (ResultSet resultSet = statement.executeQuery()) {
                     while (resultSet.next()) {
                         long id = resultSet.getLong("id");
@@ -37,26 +37,26 @@ public class CartService {
         return items;
     }
 
-    public boolean updateItem(long userId, long bookId, long amount) {
+    public boolean updateItem(long token, long bookId, long amount) {
         try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
-            String sql = "SELECT * FROM listitems WHERE user_id = ? AND book_id = ?";
+            String sql = "SELECT * FROM listitems WHERE user_id = (SELECT user_id FROM userauths WHERE token = ?) AND book_id = ?";
             try (PreparedStatement statement = conn.prepareStatement(sql)) {
-                statement.setLong(1, userId);
+                statement.setLong(1, token);
                 statement.setLong(2, bookId);
                 try (ResultSet resultSet = statement.executeQuery()) {
                     if (resultSet.next()) {
-                        sql = "UPDATE listitems SET amount=? WHERE user_id=? AND book_id=?";
+                        sql = "UPDATE listitems SET amount=? WHERE user_id=(SELECT user_id FROM userauths WHERE token = ?) AND book_id=?";
                         try (PreparedStatement updateStatement = conn.prepareStatement(sql)) {
                             updateStatement.setLong(1, amount);
-                            updateStatement.setLong(2, userId);
+                            updateStatement.setLong(2, token);
                             updateStatement.setLong(3, bookId);
                             updateStatement.executeUpdate();
                             return true;
                         }
                     } else {
-                        sql = "INSERT INTO listitems(user_id, book_id, amount) VALUES (?, ?, ?)";
+                        sql = "INSERT INTO listitems(user_id, book_id, amount) VALUES ((SELECT user_id FROM userauths WHERE token = ?), ?, ?)";
                         try (PreparedStatement insertStatement = conn.prepareStatement(sql)) {
-                            insertStatement.setLong(1, userId);
+                            insertStatement.setLong(1, token);
                             insertStatement.setLong(2, bookId);
                             insertStatement.setLong(3, amount);
                             insertStatement.executeUpdate();
@@ -71,11 +71,11 @@ public class CartService {
         }
     }
 
-    public boolean deleteItem(long userId, long bookId) {
+    public boolean deleteItem(long token, long bookId) {
         try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
-            String sql = "DELETE FROM listitems WHERE user_id = ? AND book_id = ?";
+            String sql = "DELETE FROM listitems WHERE user_id = (SELECT user_id FROM userauths WHERE token = ?) AND book_id = ?";
             try (PreparedStatement statement = conn.prepareStatement(sql)) {
-                statement.setLong(1, userId);
+                statement.setLong(1, token);
                 statement.setLong(2, bookId);
                 int count = statement.executeUpdate();
 
@@ -91,19 +91,19 @@ public class CartService {
         }
     }
 
-    public boolean purchaseList(long userId) {
+    public boolean purchaseList(long token) {
         try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
-            String sql = "SELECT * FROM listitems WHERE user_id = ?";
+            String sql = "SELECT * FROM listitems WHERE user_id = (SELECT user_id FROM userauths WHERE token = ?)";
             try (PreparedStatement statement = conn.prepareStatement(sql)) {
-                statement.setLong(1, userId);
+                statement.setLong(1, token);
                 try (ResultSet resultSet = statement.executeQuery()) {
                     if (!resultSet.next()) {
                         return false;
                     }
                     else {
-                        sql = "INSERT INTO orders(userid, createtime) VALUES (?, NOW())";
+                        sql = "INSERT INTO orders(userid, createtime) VALUES ((SELECT user_id FROM userauths WHERE token = ?), NOW())";
                         try (PreparedStatement insertOrderStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                            insertOrderStatement.setLong(1, userId);
+                            insertOrderStatement.setLong(1, token);
                             insertOrderStatement.executeUpdate();
                             ResultSet generatedKeys = insertOrderStatement.getGeneratedKeys();
                             if (generatedKeys.next()) {
@@ -122,9 +122,9 @@ public class CartService {
                                     }
                                 } while (resultSet.next());
 
-                                sql = "DELETE FROM listitems WHERE user_id = ?";
+                                sql = "DELETE FROM listitems WHERE user_id = (SELECT user_id FROM userauths WHERE token = ?)";
                                 try (PreparedStatement deleteListStatement = conn.prepareStatement(sql)) {
-                                    deleteListStatement.setLong(1, userId);
+                                    deleteListStatement.setLong(1, token);
                                     deleteListStatement.executeUpdate();
                                 }
                                 return true;

@@ -16,9 +16,9 @@ public class CartController {
     @Autowired
     private CartService cartService;
 
-    @GetMapping("/{userId}")
-    public String getList(@PathVariable("userId") long userId) {
-        ArrayList<Item> items = cartService.getList(userId);
+    @GetMapping("/{token}")
+    public String getList(@PathVariable("token") long token) {
+        ArrayList<Item> items = cartService.getList(token);
         ArrayList<JSONArray> listJson = new ArrayList<>();
         for (Item i: items) {
             listJson.add(i.toJson());
@@ -26,27 +26,27 @@ public class CartController {
         return JSONArray.toJSONString(listJson, SerializerFeature.BrowserCompatible);
     }
 
-    @PutMapping("/{userId}")
-    public String updateList(@PathVariable("userId") long userId, @RequestParam("bookId") long bookId, @RequestParam("amount") long amount) {
-        if (cartService.updateItem(userId, bookId, amount)) {
+    @PutMapping("/{token}")
+    public String updateList(@PathVariable("token") long token, @RequestParam("bookId") long bookId, @RequestParam("amount") long amount) {
+        if (cartService.updateItem(token, bookId, amount)) {
             return "Record updated successfully!";
         } else {
             return "Error occurred while updating the record!";
         }
     }
 
-    @DeleteMapping("/{userId}")
-    public String deleteList(@PathVariable("userId") long userId, @RequestParam("bookId") long bookId) {
-        if (cartService.deleteItem(userId, bookId)) {
+    @DeleteMapping("/{token}")
+    public String deleteList(@PathVariable("token") long token, @RequestParam("bookId") long bookId) {
+        if (cartService.deleteItem(token, bookId)) {
             return "Record deleted successfully!";
         } else {
             return "Error occurred while deleting the record!";
         }
     }
 
-    @PostMapping("/{userId}")
-    public String purchaseList(@PathVariable("userId") long userId) {
-        if (cartService.purchaseList(userId)) {
+    @PostMapping("/{token}")
+    public String purchaseList(@PathVariable("token") long token) {
+        if (cartService.purchaseList(token)) {
             return "Purchase successfully!";
         } else {
             return "Error occurred while purchasing the items!";
