@@ -21,11 +21,11 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
-    public String getBook(@PathVariable String id) {
+    public String getBook(@PathVariable int id) {
         return bookService.getBookById(id);
     }
     @GetMapping("/image/{id}")
-    public ResponseEntity<byte[]> getBookCover(@PathVariable("id") String id) {
+    public ResponseEntity<byte[]> getBookCover(@PathVariable("id") int id) {
         byte[] coverData = bookService.getBookCoverData(id);
 
         if (coverData != null) {

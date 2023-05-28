@@ -39,9 +39,8 @@ public class BookService {
         return booksJson.toJSONString();
     }
 
-    public String getBookById(String id) {
-        int bookId = Integer.parseInt(id);
-        Book book = bookRepository.findById(bookId).orElse(null);
+    public String getBookById(int id) {
+        Book book = bookRepository.findById(id).orElse(null);
 
         if (book != null) {
             JSONObject bookJson = new JSONObject();
@@ -58,9 +57,8 @@ public class BookService {
         return null;
     }
 
-    public byte[] getBookCoverData(String id) {
-        int bookId = Integer.parseInt(id);
-        Book book = bookRepository.findById(bookId).orElse(null);
+    public byte[] getBookCoverData(int id) {
+        Book book = bookRepository.findById(id).orElse(null);
 
         if (book != null) {
             return book.getCover();
