@@ -11,8 +11,9 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "user_id")
-    private long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @Column(name = "createtime")
     @Temporal(TemporalType.TIMESTAMP)
@@ -29,12 +30,12 @@ public class Order {
         this.id = id;
     }
 
-    public long getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    public void setUserId(long userId) {
-        this.userId = userId;
+    public void setUserId(User user) {
+        this.user = user;
     }
 
     public Date getCreateTime() {
@@ -53,4 +54,7 @@ public class Order {
         this.orderItems = orderItems;
     }
 
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

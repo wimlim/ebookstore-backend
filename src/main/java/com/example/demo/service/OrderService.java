@@ -33,40 +33,29 @@ public class OrderService {
         Optional<UserAuth> userAuth = userAuthRepository.findByToken(token);
         if (userAuth.isPresent()) {
             User user = userAuth.get().getUser();
-            List<Order> orders = orderRepository.findByUserId(user.getId());
-            Map<String, List<OrderItem>> orderItemsMap = new HashMap<>();
+            List<Order> orders = orderRepository.findByUser(user);
+            Map<Date, List<OrderItem>> orderItemsMap = new TreeMap<>(Collections.reverseOrder());
 
             for (Order order : orders) {
                 List<OrderItem> orderItems = order.getOrderItems();
                 for (OrderItem orderItem : orderItems) {
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
-                    String timestamp = dateFormat.format(order.getCreateTime());
-                    if (orderItemsMap.containsKey(timestamp)) {
-                        orderItemsMap.get(timestamp).add(orderItem);
+                    Date createTime = order.getCreateTime();
+                    if (orderItemsMap.containsKey(createTime)) {
+                        orderItemsMap.get(createTime).add(orderItem);
                     } else {
                         List<OrderItem> itemList = new ArrayList<>();
                         itemList.add(orderItem);
-                        orderItemsMap.put(timestamp, itemList);
+                        orderItemsMap.put(createTime, itemList);
                     }
                 }
             }
 
-            List<Map.Entry<String, List<OrderItem>>> sortedEntries = new ArrayList<>(orderItemsMap.entrySet());
-            Collections.sort(sortedEntries, (e1, e2) -> {
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
-                try {
-                    Date date1 = dateFormat.parse(e1.getKey());
-                    Date date2 = dateFormat.parse(e2.getKey());
-                    return date2.compareTo(date1);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return 0;
-            });
-
-            for (Map.Entry<String, List<OrderItem>> entry : sortedEntries) {
-                String timestamp = entry.getKey();
+            for (Map.Entry<Date, List<OrderItem>> entry : orderItemsMap.entrySet()) {
+                Date createTime = entry.getKey();
                 List<OrderItem> itemList = entry.getValue();
+
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
+                String timestamp = dateFormat.format(createTime);
 
                 JSONObject timestampJson = new JSONObject();
                 JSONArray itemListJson = new JSONArray();
@@ -91,7 +80,6 @@ public class OrderService {
 
     public boolean addOrderItem(int token, int bookId) {
         try {
-            System.out.println(token);
             Optional<UserAuth> userAuth = userAuthRepository.findByToken(token);
             if (userAuth.isPresent()) {
                 User user = userAuth.get().getUser();
@@ -107,7 +95,7 @@ public class OrderService {
                 orderItem.setNum(1);
 
                 Order order = new Order();
-                order.setUserId(user.getId());
+                order.setUser(user);
                 order.setCreateTime(new Date());
                 order.setOrderItems(new ArrayList<>());
                 order.getOrderItems().add(orderItem);
@@ -126,5 +114,4 @@ public class OrderService {
             return false;
         }
     }
-
 }
