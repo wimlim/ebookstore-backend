@@ -15,16 +15,16 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    @GetMapping("/{id}")
-    public String getOrder(@PathVariable("id") long userId) {
-        JSONArray timestampsJson = orderService.getOrderItemsWithTimestamps(userId);
+    @GetMapping("/{token}")
+    public String getOrder(@PathVariable("token") int token) {
+        JSONArray timestampsJson = orderService.getOrderItemsWithTimestamps(token);
         return timestampsJson.toJSONString();
     }
 
 
-    @PutMapping("/{userId}")
-    public String addOrder(@PathVariable Long userId, @RequestParam Long bookId) {
-        boolean success = orderService.addOrderItem(userId, bookId);
+    @PutMapping("/{token}")
+    public String addOrder(@PathVariable int token, @RequestParam int bookId) {
+        boolean success = orderService.addOrderItem(token, bookId);
         if (success) {
             return "New order item added successfully.";
         } else {
