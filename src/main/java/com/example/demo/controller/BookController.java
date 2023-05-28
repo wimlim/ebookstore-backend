@@ -40,7 +40,6 @@ public class BookController {
 
     @PutMapping("/{id}")
     public ResponseEntity<String> updateBook(@PathVariable int id, @RequestBody String updatedBook) {
-        System.out.println(updatedBook);
         try {
             // 在这里你可以解析 updatedBook 字符串，根据需要进行处理
             bookService.updateBook(id, updatedBook);
