@@ -31,7 +31,8 @@ public class UserService {
             Optional<UserAuth> userAuthOptional = userAuthRepository.findByUser(user);
             if (userAuthOptional.isPresent()) {
                 UserAuth userAuth = userAuthOptional.get();
-                return Integer.toString(userAuth.getToken());
+                boolean isAdmin = user.isAdmin();
+                return userAuth.getToken() + "," + isAdmin;
             }
         }
         return "";

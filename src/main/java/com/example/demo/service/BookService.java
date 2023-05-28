@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.alibaba.fastjson.JSON;
 import com.example.demo.entity.Book;
 import com.example.demo.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,4 +68,23 @@ public class BookService {
         return null;
     }
 
+    public void updateBook(int id, String updatedBook) {
+        Book existingBook = bookRepository.findById(id).orElse(null);
+
+        if (existingBook == null) {
+            throw new IllegalArgumentException("Book not found");
+        }
+
+        JSONObject bookJson = JSONObject.parseObject(updatedBook); // 使用fastjson将字符串转换为JSON对象
+
+        existingBook.setTitle(bookJson.getString("title"));
+        existingBook.setAuthor(bookJson.getString("author"));
+        existingBook.setLanguage(bookJson.getString("language"));
+        existingBook.setPublished(bookJson.getInteger("published"));
+        existingBook.setPrice(bookJson.getInteger("price"));
+        existingBook.setStatus(bookJson.getString("status"));
+        existingBook.setDescription(bookJson.getString("description"));
+
+        bookRepository.save(existingBook);
+    }
 }

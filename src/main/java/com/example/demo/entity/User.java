@@ -9,9 +9,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String firstname;
-
     private String lastname;
 
     private String twitter;
@@ -19,6 +17,7 @@ public class User {
     private String notes;
     private String account;
     private String password;
+    private boolean is_admin;
 
     public Long getId() {
         return id;
@@ -34,6 +33,10 @@ public class User {
     }
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public boolean isAdmin() {
+        return is_admin;
     }
 
     public String getFirstName() {
