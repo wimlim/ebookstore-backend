@@ -17,12 +17,12 @@ public class CartController {
     private CartService cartService;
 
     @GetMapping("/{token}")
-    public String getCart(@PathVariable("token") long token) {
+    public String getCart(@PathVariable("token") int token) {
         return cartService.getList(token);
     }
 
     @PutMapping("/{token}")
-    public String updateCart(@PathVariable("token") long token, @RequestParam("bookId") long bookId, @RequestParam("amount") long amount) {
+    public String updateCart(@PathVariable("token") int token, @RequestParam("bookId") int bookId, @RequestParam("amount") int amount) {
         if (cartService.updateItem(token, bookId, amount)) {
             return "Record updated successfully!";
         } else {
@@ -31,7 +31,7 @@ public class CartController {
     }
 
     @DeleteMapping("/{token}")
-    public String deleteCart(@PathVariable("token") long token, @RequestParam("bookId") long bookId) {
+    public String deleteCart(@PathVariable("token") int token, @RequestParam("bookId") int bookId) {
         if (cartService.deleteItem(token, bookId)) {
             return "Record deleted successfully!";
         } else {
@@ -40,7 +40,7 @@ public class CartController {
     }
 
     @PostMapping("/{token}")
-    public String purchaseCart(@PathVariable("token") long token) {
+    public String purchaseCart(@PathVariable("token") int token) {
         if (cartService.purchaseList(token)) {
             return "Purchase successfully!";
         } else {

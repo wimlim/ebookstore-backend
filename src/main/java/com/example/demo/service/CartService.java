@@ -1,12 +1,21 @@
 package com.example.demo.service;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.example.demo.entity.Item;
+import com.example.demo.entity.*;
+import com.example.demo.repository.*;
+import org.apache.catalina.Store;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
 
 @Service
 public class CartService {
@@ -14,135 +23,114 @@ public class CartService {
     private static final String URL = "jdbc:mysql://localhost/bookstore?useSSL=false";
     private static final String USERNAME = "root";
     private static final String PASSWORD = "sql.14159265";
+    @Autowired
+    private CartItemRepository cartItemRepository;
+    @Autowired
+    private BookRepository bookRepository;
+    @Autowired
+    private UserAuthRepository userAuthRepository;
+    @Autowired
+    private OrderItemRepository orderItemRepository;
 
-    public String getList(long token) {
-        ArrayList<Item> items = new ArrayList<>();
+    @Autowired
+    private OrderRepository orderRepository;
 
-        try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
-            String sql = "SELECT books.id, books.title, cartitems.amount, books.price FROM cartitems JOIN books ON cartitems.book_id = books.id WHERE cartitems.user_id = (SELECT user_id FROM userauths WHERE token = ?)";
-            try (PreparedStatement statement = conn.prepareStatement(sql)) {
-                statement.setLong(1, token);
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    while (resultSet.next()) {
-                        long id = resultSet.getLong("id");
-                        String title = resultSet.getString("title");
-                        int amount = resultSet.getInt("amount");
-                        double price = resultSet.getDouble("price");
-                        Item item = new Item(String.valueOf(id), title, String.valueOf(amount), String.valueOf(price));
-                        items.add(item);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        ArrayList<JSONArray> listJson = new ArrayList<>();
-        for (Item i: items) {
-            listJson.add(i.toJson());
-        }
-        return JSONArray.toJSONString(listJson, SerializerFeature.BrowserCompatible);
+    @Autowired
+    public CartService(CartItemRepository cartItemRepository, BookRepository bookRepository, UserAuthRepository userAuthRepository, OrderRepository orderRepository, OrderItemRepository orderItemRepository) {
+        this.cartItemRepository = cartItemRepository;
+        this.bookRepository = bookRepository;
+        this.userAuthRepository = userAuthRepository;
+        this.orderRepository = orderRepository;
+        this.orderItemRepository = orderItemRepository;
     }
 
-    public boolean updateItem(long token, long bookId, long amount) {
-        try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
-            String sql = "SELECT * FROM cartitems WHERE user_id = (SELECT user_id FROM userauths WHERE token = ?) AND book_id = ?";
-            try (PreparedStatement statement = conn.prepareStatement(sql)) {
-                statement.setLong(1, token);
-                statement.setLong(2, bookId);
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    if (resultSet.next()) {
-                        sql = "UPDATE cartitems SET amount=? WHERE user_id=(SELECT user_id FROM userauths WHERE token = ?) AND book_id=?";
-                        try (PreparedStatement updateStatement = conn.prepareStatement(sql)) {
-                            updateStatement.setLong(1, amount);
-                            updateStatement.setLong(2, token);
-                            updateStatement.setLong(3, bookId);
-                            updateStatement.executeUpdate();
-                            return true;
-                        }
-                    } else {
-                        sql = "INSERT INTO cartitems(user_id, book_id, amount) VALUES ((SELECT user_id FROM userauths WHERE token = ?), ?, ?)";
-                        try (PreparedStatement insertStatement = conn.prepareStatement(sql)) {
-                            insertStatement.setLong(1, token);
-                            insertStatement.setLong(2, bookId);
-                            insertStatement.setLong(3, amount);
-                            insertStatement.executeUpdate();
-                            return true;
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+    public String getList(int token) {
+        Optional<UserAuth> userAuthOptional = userAuthRepository.findByToken(token);
+        List<CartItem> cartItems = new ArrayList<>();
+        if (userAuthOptional.isPresent()) {
+            UserAuth userAuth = userAuthOptional.get();
+            cartItems = cartItemRepository.findByUser(userAuth.getUser());
         }
+        JSONArray listJson = new JSONArray();
+        for (CartItem cartItem : cartItems) {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("id", cartItem.getBook().getId()); // Replace "id" with the actual identifier field in your CartItem class
+            jsonObject.put("title", cartItem.getBook().getTitle());
+            jsonObject.put("amount", cartItem.getAmount());
+            jsonObject.put("price", cartItem.getBook().getPrice());
+            listJson.add(jsonObject);
+        }
+        return listJson.toJSONString();
     }
 
-    public boolean deleteItem(long token, long bookId) {
-        try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
-            String sql = "DELETE FROM cartitems WHERE user_id = (SELECT user_id FROM userauths WHERE token = ?) AND book_id = ?";
-            try (PreparedStatement statement = conn.prepareStatement(sql)) {
-                statement.setLong(1, token);
-                statement.setLong(2, bookId);
-                int count = statement.executeUpdate();
 
-                if (count > 0) {
-                    return true;
-                } else {
-                    return false;
-                }
+    public boolean updateItem(int token, int bookId, int amount) {
+        Optional<UserAuth> userAuthOptional = userAuthRepository.findByToken(token);
+        Optional<Book> bookOptional = bookRepository.findById(bookId);
+        if (userAuthOptional.isPresent() && bookOptional.isPresent()) {
+            UserAuth userAuth = userAuthOptional.get();
+            Book book = bookOptional.get();
+            Optional<CartItem> cartItemOptional = cartItemRepository.findByUserAndBook(userAuth.getUser(), book);
+            if (cartItemOptional.isPresent()) {
+                CartItem cartItem = cartItemOptional.get();
+                cartItem.setAmount((int) amount);
+                cartItemRepository.save(cartItem);
+            } else {
+                CartItem cartItem = new CartItem();
+                cartItem.setUser(userAuth.getUser());
+                cartItem.setBook(book);
+                cartItem.setAmount((int) amount);
+                cartItemRepository.save(cartItem);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public boolean purchaseList(long token) {
-        try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
-            String sql = "SELECT * FROM cartitems WHERE user_id = (SELECT user_id FROM userauths WHERE token = ?)";
-            try (PreparedStatement statement = conn.prepareStatement(sql)) {
-                statement.setLong(1, token);
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    if (!resultSet.next()) {
-                        return false;
-                    }
-                    else {
-                        sql = "INSERT INTO orders(userid, createtime) VALUES ((SELECT user_id FROM userauths WHERE token = ?), NOW())";
-                        try (PreparedStatement insertOrderStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                            insertOrderStatement.setLong(1, token);
-                            insertOrderStatement.executeUpdate();
-                            ResultSet generatedKeys = insertOrderStatement.getGeneratedKeys();
-                            if (generatedKeys.next()) {
-                                long orderId = generatedKeys.getLong(1);
-
-                                do {
-                                    long bookId = resultSet.getLong("book_id");
-                                    int amount = resultSet.getInt("amount");
-
-                                    sql = "INSERT INTO orderitems(order_id, book_id, num) VALUES (?, ?, ?)";
-                                    try (PreparedStatement insertOrderItemStatement = conn.prepareStatement(sql)) {
-                                        insertOrderItemStatement.setLong(1, orderId);
-                                        insertOrderItemStatement.setLong(2, bookId);
-                                        insertOrderItemStatement.setInt(3, amount);
-                                        insertOrderItemStatement.executeUpdate();
-                                    }
-                                } while (resultSet.next());
-
-                                sql = "DELETE FROM cartitems WHERE user_id = (SELECT user_id FROM userauths WHERE token = ?)";
-                                try (PreparedStatement deleteListStatement = conn.prepareStatement(sql)) {
-                                    deleteListStatement.setLong(1, token);
-                                    deleteListStatement.executeUpdate();
-                                }
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+            return true;
         }
         return false;
     }
+
+    public boolean deleteItem(int token, int bookId) {
+        Optional<UserAuth> userAuthOptional = userAuthRepository.findByToken(token);
+        Optional<Book> bookOptional = bookRepository.findById(bookId);
+
+        if (userAuthOptional.isPresent() && bookOptional.isPresent()) {
+            UserAuth userAuth = userAuthOptional.get();
+            Book book = bookOptional.get();
+            Optional<CartItem> cartItem = cartItemRepository.findByUserAndBook(userAuth.getUser(), book);
+
+            if (cartItem.isPresent()) {
+                cartItemRepository.delete(cartItem.get());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean purchaseList(int token) {
+        Optional<UserAuth> userAuthOptional = userAuthRepository.findByToken(token);
+        if (userAuthOptional.isPresent()) {
+            UserAuth userAuth = userAuthOptional.get();
+
+            List<CartItem> cartItems = cartItemRepository.findByUser(userAuth.getUser());
+            if (cartItems.isEmpty()) {
+                return false;
+            }
+
+            Order order = new Order();
+            order.setUser(userAuth.getUser());
+            order.setCreateTime(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
+            orderRepository.save(order);
+            for (CartItem cartItem : cartItems) {
+                OrderItem orderItem = new OrderItem();
+                orderItem.setOrder(order);
+                orderItem.setBook(cartItem.getBook());
+                orderItem.setNum(cartItem.getAmount());
+                orderItemRepository.save(orderItem);
+            }
+            cartItemRepository.deleteByUser(userAuth.getUser());
+            return true;
+        }
+
+        return false;
+    }
+
 
 }
