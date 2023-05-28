@@ -20,15 +20,6 @@ public class CartItem {
     @JoinColumn(name = "book_id")
     private Book book;
 
-    public CartItem() {
-        // 默认构造函数
-    }
-
-    public CartItem(Integer amount, User user, Book book) {
-        this.amount = amount;
-        this.user = user;
-        this.book = book;
-    }
 
     // Getters and Setters
 

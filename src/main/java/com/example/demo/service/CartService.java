@@ -1,5 +1,7 @@
 package com.example.demo.service;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.example.demo.entity.Item;
 import org.springframework.stereotype.Service;
 
@@ -13,11 +15,11 @@ public class CartService {
     private static final String USERNAME = "root";
     private static final String PASSWORD = "sql.14159265";
 
-    public ArrayList<Item> getList(long token) {
+    public String getList(long token) {
         ArrayList<Item> items = new ArrayList<>();
 
         try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
-            String sql = "SELECT books.id, books.title, listitems.amount, books.price FROM listitems JOIN books ON listitems.book_id = books.id WHERE listitems.user_id = (SELECT user_id FROM userauths WHERE token = ?)";
+            String sql = "SELECT books.id, books.title, cartitems.amount, books.price FROM cartitems JOIN books ON cartitems.book_id = books.id WHERE cartitems.user_id = (SELECT user_id FROM userauths WHERE token = ?)";
             try (PreparedStatement statement = conn.prepareStatement(sql)) {
                 statement.setLong(1, token);
                 try (ResultSet resultSet = statement.executeQuery()) {
@@ -34,18 +36,22 @@ public class CartService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return items;
+        ArrayList<JSONArray> listJson = new ArrayList<>();
+        for (Item i: items) {
+            listJson.add(i.toJson());
+        }
+        return JSONArray.toJSONString(listJson, SerializerFeature.BrowserCompatible);
     }
 
     public boolean updateItem(long token, long bookId, long amount) {
         try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
-            String sql = "SELECT * FROM listitems WHERE user_id = (SELECT user_id FROM userauths WHERE token = ?) AND book_id = ?";
+            String sql = "SELECT * FROM cartitems WHERE user_id = (SELECT user_id FROM userauths WHERE token = ?) AND book_id = ?";
             try (PreparedStatement statement = conn.prepareStatement(sql)) {
                 statement.setLong(1, token);
                 statement.setLong(2, bookId);
                 try (ResultSet resultSet = statement.executeQuery()) {
                     if (resultSet.next()) {
-                        sql = "UPDATE listitems SET amount=? WHERE user_id=(SELECT user_id FROM userauths WHERE token = ?) AND book_id=?";
+                        sql = "UPDATE cartitems SET amount=? WHERE user_id=(SELECT user_id FROM userauths WHERE token = ?) AND book_id=?";
                         try (PreparedStatement updateStatement = conn.prepareStatement(sql)) {
                             updateStatement.setLong(1, amount);
                             updateStatement.setLong(2, token);
@@ -54,7 +60,7 @@ public class CartService {
                             return true;
                         }
                     } else {
-                        sql = "INSERT INTO listitems(user_id, book_id, amount) VALUES ((SELECT user_id FROM userauths WHERE token = ?), ?, ?)";
+                        sql = "INSERT INTO cartitems(user_id, book_id, amount) VALUES ((SELECT user_id FROM userauths WHERE token = ?), ?, ?)";
                         try (PreparedStatement insertStatement = conn.prepareStatement(sql)) {
                             insertStatement.setLong(1, token);
                             insertStatement.setLong(2, bookId);
@@ -73,7 +79,7 @@ public class CartService {
 
     public boolean deleteItem(long token, long bookId) {
         try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
-            String sql = "DELETE FROM listitems WHERE user_id = (SELECT user_id FROM userauths WHERE token = ?) AND book_id = ?";
+            String sql = "DELETE FROM cartitems WHERE user_id = (SELECT user_id FROM userauths WHERE token = ?) AND book_id = ?";
             try (PreparedStatement statement = conn.prepareStatement(sql)) {
                 statement.setLong(1, token);
                 statement.setLong(2, bookId);
@@ -93,7 +99,7 @@ public class CartService {
 
     public boolean purchaseList(long token) {
         try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
-            String sql = "SELECT * FROM listitems WHERE user_id = (SELECT user_id FROM userauths WHERE token = ?)";
+            String sql = "SELECT * FROM cartitems WHERE user_id = (SELECT user_id FROM userauths WHERE token = ?)";
             try (PreparedStatement statement = conn.prepareStatement(sql)) {
                 statement.setLong(1, token);
                 try (ResultSet resultSet = statement.executeQuery()) {
@@ -122,7 +128,7 @@ public class CartService {
                                     }
                                 } while (resultSet.next());
 
-                                sql = "DELETE FROM listitems WHERE user_id = (SELECT user_id FROM userauths WHERE token = ?)";
+                                sql = "DELETE FROM cartitems WHERE user_id = (SELECT user_id FROM userauths WHERE token = ?)";
                                 try (PreparedStatement deleteListStatement = conn.prepareStatement(sql)) {
                                     deleteListStatement.setLong(1, token);
                                     deleteListStatement.executeUpdate();

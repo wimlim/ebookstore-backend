@@ -17,17 +17,12 @@ public class CartController {
     private CartService cartService;
 
     @GetMapping("/{token}")
-    public String getList(@PathVariable("token") long token) {
-        ArrayList<Item> items = cartService.getList(token);
-        ArrayList<JSONArray> listJson = new ArrayList<>();
-        for (Item i: items) {
-            listJson.add(i.toJson());
-        }
-        return JSONArray.toJSONString(listJson, SerializerFeature.BrowserCompatible);
+    public String getCart(@PathVariable("token") long token) {
+        return cartService.getList(token);
     }
 
     @PutMapping("/{token}")
-    public String updateList(@PathVariable("token") long token, @RequestParam("bookId") long bookId, @RequestParam("amount") long amount) {
+    public String updateCart(@PathVariable("token") long token, @RequestParam("bookId") long bookId, @RequestParam("amount") long amount) {
         if (cartService.updateItem(token, bookId, amount)) {
             return "Record updated successfully!";
         } else {
@@ -36,7 +31,7 @@ public class CartController {
     }
 
     @DeleteMapping("/{token}")
-    public String deleteList(@PathVariable("token") long token, @RequestParam("bookId") long bookId) {
+    public String deleteCart(@PathVariable("token") long token, @RequestParam("bookId") long bookId) {
         if (cartService.deleteItem(token, bookId)) {
             return "Record deleted successfully!";
         } else {
@@ -45,7 +40,7 @@ public class CartController {
     }
 
     @PostMapping("/{token}")
-    public String purchaseList(@PathVariable("token") long token) {
+    public String purchaseCart(@PathVariable("token") long token) {
         if (cartService.purchaseList(token)) {
             return "Purchase successfully!";
         } else {
