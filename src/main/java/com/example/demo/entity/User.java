@@ -61,4 +61,7 @@ public class User {
         return notes;
     }
 
+    public UserAuth getUserAuth() {
+        return userAuth;
+    }
 }

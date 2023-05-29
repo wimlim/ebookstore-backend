@@ -2,12 +2,12 @@ package com.example.demo.service.impl;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.example.demo.dao.CartItemDAO;
+import com.example.demo.dao.BookDao;
+import com.example.demo.dao.UserAuthDao;
+import com.example.demo.dao.OrderDao;
+import com.example.demo.dao.OrderItemDao;
 import com.example.demo.entity.*;
-import com.example.demo.repository.CartItemRepository;
-import com.example.demo.repository.BookRepository;
-import com.example.demo.repository.UserAuthRepository;
-import com.example.demo.repository.OrderItemRepository;
-import com.example.demo.repository.OrderRepository;
 import com.example.demo.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,27 +23,26 @@ import java.util.Optional;
 public class CartServiceImpl implements CartService {
 
     @Autowired
-    private CartItemRepository cartItemRepository;
+    private CartItemDAO cartItemDAO;
 
     @Autowired
-    private BookRepository bookRepository;
+    private BookDao bookDao;
 
     @Autowired
-    private UserAuthRepository userAuthRepository;
+    private UserAuthDao userAuthDao;
 
     @Autowired
-    private OrderRepository orderRepository;
+    private OrderDao orderDao;
 
     @Autowired
-    private OrderItemRepository orderItemRepository;
+    private OrderItemDao orderItemDao;
 
     @Override
     public String getList(int token) {
-        Optional<UserAuth> userAuthOptional = userAuthRepository.findByToken(token);
+        UserAuth userAuth = userAuthDao.findByToken(token);
         List<CartItem> cartItems = new ArrayList<>();
-        if (userAuthOptional.isPresent()) {
-            UserAuth userAuth = userAuthOptional.get();
-            cartItems = cartItemRepository.findByUser(userAuth.getUser());
+        if (userAuth != null) {
+            cartItems = cartItemDAO.findByUser(userAuth.getUser());
         }
         JSONArray listJson = new JSONArray();
         for (CartItem cartItem : cartItems) {
@@ -59,22 +58,19 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public boolean updateItem(int token, int bookId, int amount) {
-        Optional<UserAuth> userAuthOptional = userAuthRepository.findByToken(token);
-        Optional<Book> bookOptional = bookRepository.findById(bookId);
-        if (userAuthOptional.isPresent() && bookOptional.isPresent()) {
-            UserAuth userAuth = userAuthOptional.get();
-            Book book = bookOptional.get();
-            Optional<CartItem> cartItemOptional = cartItemRepository.findByUserAndBook(userAuth.getUser(), book);
-            if (cartItemOptional.isPresent()) {
-                CartItem cartItem = cartItemOptional.get();
+        UserAuth userAuth = userAuthDao.findByToken(token);
+        Book book = bookDao.findById(bookId);
+        if (userAuth != null && book != null) {
+            CartItem cartItem = cartItemDAO.findByUserAndBook(userAuth.getUser(), book);
+            if (cartItem != null) {
                 cartItem.setAmount(amount);
-                cartItemRepository.save(cartItem);
+                cartItemDAO.save(cartItem);
             } else {
-                CartItem cartItem = new CartItem();
-                cartItem.setUser(userAuth.getUser());
-                cartItem.setBook(book);
-                cartItem.setAmount(amount);
-                cartItemRepository.save(cartItem);
+                CartItem newcartItem = new CartItem();
+                newcartItem.setUser(userAuth.getUser());
+                newcartItem.setBook(book);
+                newcartItem.setAmount(amount);
+                cartItemDAO.save(newcartItem);
             }
             return true;
         }
@@ -83,16 +79,14 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public boolean deleteItem(int token, int bookId) {
-        Optional<UserAuth> userAuthOptional = userAuthRepository.findByToken(token);
-        Optional<Book> bookOptional = bookRepository.findById(bookId);
+        UserAuth userAuth = userAuthDao.findByToken(token);
+        Book book = bookDao.findById(bookId);
 
-        if (userAuthOptional.isPresent() && bookOptional.isPresent()) {
-            UserAuth userAuth = userAuthOptional.get();
-            Book book = bookOptional.get();
-            Optional<CartItem> cartItem = cartItemRepository.findByUserAndBook(userAuth.getUser(), book);
+        if (userAuth != null && book != null) {
+            CartItem cartItem = cartItemDAO.findByUserAndBook(userAuth.getUser(), book);
 
-            if (cartItem.isPresent()) {
-                cartItemRepository.delete(cartItem.get());
+            if (cartItem != null) {
+                cartItemDAO.delete(cartItem);
                 return true;
             }
         }
@@ -101,11 +95,9 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public boolean purchaseList(int token) {
-        Optional<UserAuth> userAuthOptional = userAuthRepository.findByToken(token);
-        if (userAuthOptional.isPresent()) {
-            UserAuth userAuth = userAuthOptional.get();
-
-            List<CartItem> cartItems = cartItemRepository.findByUser(userAuth.getUser());
+        UserAuth userAuth = userAuthDao.findByToken(token);
+        if (userAuth != null) {
+            List<CartItem> cartItems = cartItemDAO.findByUser(userAuth.getUser());
             if (cartItems.isEmpty()) {
                 return false;
             }
@@ -113,15 +105,15 @@ public class CartServiceImpl implements CartService {
             Order order = new Order();
             order.setUser(userAuth.getUser());
             order.setCreateTime(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
-            orderRepository.save(order);
+            orderDao.saveOrder(order);
             for (CartItem cartItem : cartItems) {
                 OrderItem orderItem = new OrderItem();
                 orderItem.setOrder(order);
                 orderItem.setBook(cartItem.getBook());
                 orderItem.setNum(cartItem.getAmount());
-                orderItemRepository.save(orderItem);
+                orderItemDao.saveOrderItem(orderItem);
             }
-            cartItemRepository.deleteByUser(userAuth.getUser());
+            cartItemDAO.deleteByUser(userAuth.getUser());
             return true;
         }
         return false;

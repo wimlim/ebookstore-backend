@@ -1,4 +1,7 @@
 package com.example.demo.dao;
 
-public class OrderItemDao {
+import com.example.demo.entity.OrderItem;
+
+public interface OrderItemDao {
+    void saveOrderItem(OrderItem orderItem);
 }

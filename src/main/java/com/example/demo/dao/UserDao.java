@@ -1,4 +1,7 @@
 package com.example.demo.dao;
 
-public class UserDao {
+import com.example.demo.entity.User;
+
+public interface UserDao {
+    User findByAccountAndPassword(String account, String password);
 }

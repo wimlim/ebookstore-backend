@@ -2,11 +2,11 @@ package com.example.demo.service.impl;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.example.demo.dao.UserAuthDao;
+import com.example.demo.dao.OrderDao;
+import com.example.demo.dao.OrderItemDao;
+import com.example.demo.dao.BookDao;
 import com.example.demo.entity.*;
-import com.example.demo.repository.BookRepository;
-import com.example.demo.repository.OrderItemRepository;
-import com.example.demo.repository.OrderRepository;
-import com.example.demo.repository.UserAuthRepository;
 import com.example.demo.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,26 +17,25 @@ import java.util.*;
 @Service
 public class OrderServiceImpl implements OrderService {
 
-    private final OrderRepository orderRepository;
-    private final BookRepository bookRepository;
-    private final OrderItemRepository orderItemRepository;
-    private final UserAuthRepository userAuthRepository;
+    private final OrderDao orderDao;
+    private final UserAuthDao userAuthDao;
+    private final OrderItemDao orderItemDao;
+    private final BookDao bookDao;
 
     @Autowired
-    public OrderServiceImpl(OrderRepository orderRepository, BookRepository bookRepository, OrderItemRepository orderItemRepository, UserAuthRepository userAuthRepository) {
-        this.orderRepository = orderRepository;
-        this.bookRepository = bookRepository;
-        this.orderItemRepository = orderItemRepository;
-        this.userAuthRepository = userAuthRepository;
+    public OrderServiceImpl(OrderDao orderDao, UserAuthDao userAuthDao, OrderItemDao orderItemDao, BookDao bookDao) {
+        this.orderDao = orderDao;
+        this.userAuthDao = userAuthDao;
+        this.orderItemDao = orderItemDao;
+        this.bookDao = bookDao;
     }
 
     @Override
     public JSONArray getOrderItemsWithTimestamps(int token) {
         JSONArray timestampsJson = new JSONArray();
-        Optional<UserAuth> userAuth = userAuthRepository.findByToken(token);
-        if (userAuth.isPresent()) {
-            User user = userAuth.get().getUser();
-            List<Order> orders = orderRepository.findByUser(user);
+        UserAuth userAuth = userAuthDao.findByToken(token);
+        if (userAuth != null) {
+            List<Order> orders = orderDao.findByUser(userAuth.getUser());
             Map<Date, List<OrderItem>> orderItemsMap = new TreeMap<>(Collections.reverseOrder());
 
             for (Order order : orders) {
@@ -84,30 +83,27 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public boolean addOrderItem(int token, int bookId) {
         try {
-            Optional<UserAuth> userAuth = userAuthRepository.findByToken(token);
-            if (userAuth.isPresent()) {
-                User user = userAuth.get().getUser();
-
-                Optional<Book> optionalBook = bookRepository.findById(bookId);
-                if (optionalBook.isEmpty()) {
+            UserAuth userAuth = userAuthDao.findByToken(token);
+            if (userAuth != null) {
+                Book book = bookDao.findById(bookId);
+                if (book == null) {
                     return false;
                 }
-                Book book = optionalBook.get();
 
                 OrderItem orderItem = new OrderItem();
                 orderItem.setBook(book);
                 orderItem.setNum(1);
 
                 Order order = new Order();
-                order.setUser(user);
+                order.setUser(userAuth.getUser());
                 order.setCreateTime(new Date());
                 order.setOrderItems(new ArrayList<>());
                 order.getOrderItems().add(orderItem);
 
                 orderItem.setOrder(order);
 
-                orderRepository.save(order);
-                orderItemRepository.save(orderItem);
+                orderDao.saveOrder(order);
+                orderItemDao.saveOrderItem(orderItem);
 
                 return true;
             } else {

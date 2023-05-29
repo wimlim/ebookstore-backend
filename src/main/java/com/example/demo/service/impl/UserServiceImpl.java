@@ -1,48 +1,41 @@
 package com.example.demo.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.example.demo.dao.UserDao;
+import com.example.demo.dao.UserAuthDao;
 import com.example.demo.entity.User;
 import com.example.demo.entity.UserAuth;
-import com.example.demo.repository.UserAuthRepository;
-import com.example.demo.repository.UserRepository;
 import com.example.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final UserRepository userRepository;
-    private final UserAuthRepository userAuthRepository;
+    private final UserDao userDao;
+    private final UserAuthDao userAuthDao;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, UserAuthRepository userAuthRepository) {
-        this.userRepository = userRepository;
-        this.userAuthRepository = userAuthRepository;
+    public UserServiceImpl(UserDao userDao, UserAuthDao userAuthDao) {
+        this.userDao = userDao;
+        this.userAuthDao = userAuthDao;
     }
 
     @Override
     public String login(String account, String password) {
-        Optional<User> userOptional = userRepository.findByAccountAndPassword(account, password);
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            Optional<UserAuth> userAuthOptional = userAuthRepository.findByUser(user);
-            if (userAuthOptional.isPresent()) {
-                UserAuth userAuth = userAuthOptional.get();
-                boolean isAdmin = user.isAdmin();
-                return userAuth.getToken() + "," + isAdmin;
-            }
+        User user = userDao.findByAccountAndPassword(account, password);
+        if (user != null) {
+            UserAuth userAuth = user.getUserAuth();
+            boolean isAdmin = user.isAdmin();
+            return userAuth.getToken() + "," + isAdmin;
         }
         return "";
     }
 
     @Override
     public String getUserProfile(Long token) {
-        Optional<UserAuth> userAuthOptional = userAuthRepository.findByToken(token.intValue());
-        if (userAuthOptional.isPresent()) {
-            UserAuth userAuth = userAuthOptional.get();
+        UserAuth userAuth = userAuthDao.findByToken(token.intValue());
+        if (userAuth != null) {
             User user = userAuth.getUser();
 
             JSONObject jsonObject = new JSONObject();

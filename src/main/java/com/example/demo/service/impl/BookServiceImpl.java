@@ -1,4 +1,4 @@
-package com.example.demo.serviceImpl;
+package com.example.demo.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.example.demo.dao.BookDao;

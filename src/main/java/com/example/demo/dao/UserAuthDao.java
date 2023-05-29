@@ -1,4 +1,7 @@
 package com.example.demo.dao;
 
-public class UserAuthDao {
+import com.example.demo.entity.UserAuth;
+
+public interface UserAuthDao {
+    UserAuth findByToken(int token);
 }
