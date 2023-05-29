@@ -1,8 +1,8 @@
 package com.example.demo.serviceImpl;
 
 import com.alibaba.fastjson.JSON;
+import com.example.demo.dao.BookDao;
 import com.example.demo.entity.Book;
-import com.example.demo.repository.BookRepository;
 import com.example.demo.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,16 +15,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class BookServiceImpl implements BookService {
 
-    private final BookRepository bookRepository;
+    private final BookDao bookDao;
 
     @Autowired
-    public BookServiceImpl(BookRepository bookRepository) {
-        this.bookRepository = bookRepository;
+    public BookServiceImpl(BookDao bookDao) {
+        this.bookDao = bookDao;
     }
 
     @Override
     public String getAllBooks() {
-        List<Book> books = bookRepository.findAll();
+        List<Book> books = bookDao.findAll();
 
         JSONArray booksJson = new JSONArray();
         for (Book book : books) {
@@ -44,7 +44,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public String getBookById(int id) {
-        Book book = bookRepository.findById(id).orElse(null);
+        Book book = bookDao.findById(id);
 
         if (book != null) {
             JSONObject bookJson = new JSONObject();
@@ -63,17 +63,12 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public byte[] getBookCoverData(int id) {
-        Book book = bookRepository.findById(id).orElse(null);
-
-        if (book != null) {
-            return book.getCover();
-        }
-        return null;
+        return bookDao.getCoverData(id);
     }
 
     @Override
     public void updateBook(int id, String updatedBook) {
-        Book existingBook = bookRepository.findById(id).orElse(null);
+        Book existingBook = bookDao.findById(id);
 
         if (existingBook == null) {
             throw new IllegalArgumentException("Book not found");
@@ -89,6 +84,6 @@ public class BookServiceImpl implements BookService {
         existingBook.setStatus(bookJson.getString("status"));
         existingBook.setDescription(bookJson.getString("description"));
 
-        bookRepository.save(existingBook);
+        bookDao.update(existingBook);
     }
 }
