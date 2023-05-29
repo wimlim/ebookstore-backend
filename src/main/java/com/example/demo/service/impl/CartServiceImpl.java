@@ -36,6 +36,14 @@ public class CartServiceImpl implements CartService {
 
     @Autowired
     private OrderItemDao orderItemDao;
+    @Autowired
+    public CartServiceImpl(CartItemDAO cartItemDAO, BookDao bookDao, UserAuthDao userAuthDao, OrderDao orderDao, OrderItemDao orderItemDao) {
+        this.cartItemDAO = cartItemDAO;
+        this.bookDao = bookDao;
+        this.userAuthDao = userAuthDao;
+        this.orderDao = orderDao;
+        this.orderItemDao = orderItemDao;
+    }
 
     @Override
     public String getList(int token) {

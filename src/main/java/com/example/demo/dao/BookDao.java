@@ -12,5 +12,7 @@ public interface BookDao {
     byte[] getCoverData(int id);
 
     void update(Book book);
+    void delete(Book book);
+
 }
 

@@ -57,4 +57,10 @@ public class BookDaoImpl implements BookDao {
 
         bookRepository.save(existingBook);
     }
+
+    @Override
+    public void delete(Book book) {
+        bookRepository.delete(book);
+    }
+
 }

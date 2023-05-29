@@ -9,4 +9,6 @@ public interface BookService {
     byte[] getBookCoverData(int id);
 
     void updateBook(int id, String updatedBook);
+    void deleteBook(int id);
+
 }

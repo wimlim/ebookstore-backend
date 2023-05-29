@@ -82,35 +82,30 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public boolean addOrderItem(int token, int bookId) {
-        try {
-            UserAuth userAuth = userAuthDao.findByToken(token);
-            if (userAuth != null) {
-                Book book = bookDao.findById(bookId);
-                if (book == null) {
-                    return false;
-                }
-
-                OrderItem orderItem = new OrderItem();
-                orderItem.setBook(book);
-                orderItem.setNum(1);
-
-                Order order = new Order();
-                order.setUser(userAuth.getUser());
-                order.setCreateTime(new Date());
-                order.setOrderItems(new ArrayList<>());
-                order.getOrderItems().add(orderItem);
-
-                orderItem.setOrder(order);
-
-                orderDao.saveOrder(order);
-                orderItemDao.saveOrderItem(orderItem);
-
-                return true;
-            } else {
+        UserAuth userAuth = userAuthDao.findByToken(token);
+        if (userAuth != null) {
+            Book book = bookDao.findById(bookId);
+            if (book == null) {
                 return false;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+
+            OrderItem orderItem = new OrderItem();
+            orderItem.setBook(book);
+            orderItem.setNum(1);
+
+            Order order = new Order();
+            order.setUser(userAuth.getUser());
+            order.setCreateTime(new Date());
+            order.setOrderItems(new ArrayList<>());
+            order.getOrderItems().add(orderItem);
+
+            orderItem.setOrder(order);
+
+            orderDao.saveOrder(order);
+            orderItemDao.saveOrderItem(orderItem);
+
+            return true;
+        } else {
             return false;
         }
     }

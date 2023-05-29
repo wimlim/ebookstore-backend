@@ -86,4 +86,16 @@ public class BookServiceImpl implements BookService {
 
         bookDao.update(existingBook);
     }
+
+    @Override
+    public void deleteBook(int id) {
+        Book existingBook = bookDao.findById(id);
+
+        if (existingBook == null) {
+            throw new IllegalArgumentException("Book not found");
+        }
+
+        bookDao.delete(existingBook);
+    }
+
 }

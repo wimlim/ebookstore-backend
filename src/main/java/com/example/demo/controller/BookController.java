@@ -41,7 +41,6 @@ public class BookController {
     @PutMapping("/{id}")
     public ResponseEntity<String> updateBook(@PathVariable int id, @RequestBody String updatedBook) {
         try {
-            // 在这里你可以解析 updatedBook 字符串，根据需要进行处理
             bookService.updateBook(id, updatedBook);
             return new ResponseEntity<>("Book updated successfully", HttpStatus.OK);
         } catch (IllegalArgumentException e) {
@@ -50,4 +49,16 @@ public class BookController {
             return new ResponseEntity<>("An error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteBook(@PathVariable int id) {
+        try {
+            bookService.deleteBook(id);
+            return new ResponseEntity<>("Book deleted successfully", HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>("An error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }
