@@ -1,41 +1,29 @@
 package com.example.demo.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
+@Table(name = "books")
 public class Book {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
     private String title;
     private String author;
     private String language;
-    private String published;
-    private String price;
+    private int published;
+    private int price;
     private String status;
     private String description;
 
-    public Book() {}
+    @Lob
+    private byte[] cover;
 
-    public Book(String title, String author, String language, String published, String price, String status, String description) {
-        this.title = title;
-        this.author = author;
-        this.language = language;
-        this.published = published;
-        this.price = price;
-        this.status = status;
-        this.description = description;
-    }
-
-    public Long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -63,19 +51,19 @@ public class Book {
         this.language = language;
     }
 
-    public String getPublished() {
+    public int getPublished() {
         return published;
     }
 
-    public void setPublished(String published) {
+    public void setPublished(int published) {
         this.published = published;
     }
 
-    public String getPrice() {
+    public int getPrice() {
         return price;
     }
 
-    public void setPrice(String price) {
+    public void setPrice(int price) {
         this.price = price;
     }
 
@@ -93,5 +81,13 @@ public class Book {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public byte[] getCover() {
+        return cover;
+    }
+
+    public void setCover(byte[] cover) {
+        this.cover = cover;
     }
 }

@@ -1,27 +1,72 @@
 package com.example.demo.entity;
 
-import com.alibaba.fastjson.JSONArray;
+import javax.persistence.*;
+import java.util.List;
 
-import java.util.ArrayList;
-
+@Entity
+@Table(name = "users")
 public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String firstname;
     private String lastname;
+
     private String twitter;
+
     private String notes;
-    public User(String firstname, String lastname, String twitter, String notes) {
-        this.firstname = firstname;
-        this.lastname = lastname;
-        this.twitter = twitter;
-        this.notes = notes;
+    private String account;
+    private String password;
+    private boolean is_admin;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private UserAuth userAuth;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Order> orders;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<CartItem> cartItems;
+
+    public Long getId() {
+        return id;
     }
 
-    public JSONArray toJson() {
-        ArrayList<String> arrayList = new ArrayList<String>();
-        arrayList.add(firstname);
-        arrayList.add(lastname);
-        arrayList.add(twitter);
-        arrayList.add(notes);
-        return (JSONArray) JSONArray.toJSON(arrayList);
+    public String getAccount() {
+        return account;
+    }
+
+    public void setAccount(String account) {
+        this.account = account;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public boolean isAdmin() {
+        return is_admin;
+    }
+
+    public String getFirstName() {
+        return firstname;
+    }
+
+    public String getLastName() {
+        return lastname;
+    }
+
+    public String getTwitter() {
+        return twitter;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public UserAuth getUserAuth() {
+        return userAuth;
     }
 }
