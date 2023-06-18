@@ -11,9 +11,9 @@ public class Book {
     private String title;
     private String author;
     private String language;
-    private int published;
+    private int isbn;
     private int price;
-    private String status;
+    private int stock;
     private String description;
 
     @Lob
@@ -51,12 +51,12 @@ public class Book {
         this.language = language;
     }
 
-    public int getPublished() {
-        return published;
+    public int getIsbn() {
+        return isbn;
     }
 
-    public void setPublished(int published) {
-        this.published = published;
+    public void setIsbn(int published) {
+        this.isbn = published;
     }
 
     public int getPrice() {
@@ -67,12 +67,12 @@ public class Book {
         this.price = price;
     }
 
-    public String getStatus() {
-        return status;
+    public int getStock() {
+        return stock;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setStock(int stock) {
+        this.stock = stock;
     }
 
     public String getDescription() {

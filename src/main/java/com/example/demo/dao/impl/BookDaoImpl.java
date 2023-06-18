@@ -50,9 +50,9 @@ public class BookDaoImpl implements BookDao {
         existingBook.setTitle(updatedBook.getTitle());
         existingBook.setAuthor(updatedBook.getAuthor());
         existingBook.setLanguage(updatedBook.getLanguage());
-        existingBook.setPublished(updatedBook.getPublished());
+        existingBook.setIsbn(updatedBook.getIsbn());
         existingBook.setPrice(updatedBook.getPrice());
-        existingBook.setStatus(updatedBook.getStatus());
+        existingBook.setStock(updatedBook.getStock());
         existingBook.setDescription(updatedBook.getDescription());
 
         bookRepository.save(existingBook);
