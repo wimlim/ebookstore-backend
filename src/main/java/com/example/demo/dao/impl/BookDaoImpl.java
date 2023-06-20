@@ -63,4 +63,13 @@ public class BookDaoImpl implements BookDao {
         bookRepository.delete(book);
     }
 
+    @Override
+    public void updateStock(int bookId, int i) {
+        Book book = bookRepository.findById(bookId).orElse(null);
+        if (book != null) {
+            book.setStock(book.getStock() - i);
+            bookRepository.save(book);
+        }
+    }
+
 }

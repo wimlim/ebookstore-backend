@@ -28,4 +28,8 @@ public class OrderDaoImpl implements OrderDao {
     public void saveOrder(Order order) {
         orderRepository.save(order);
     }
+    @Override
+    public List<Order> findAll() {
+        return orderRepository.findAll();
+    }
 }

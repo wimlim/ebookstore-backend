@@ -21,6 +21,11 @@ public class OrderController {
         return timestampsJson.toJSONString();
     }
 
+    @GetMapping("/all")
+    public String getAllOrders() {
+        JSONArray ordersJson = orderService.getAllOrders();
+        return ordersJson.toJSONString();
+    }
 
     @PutMapping("/{token}")
     public String addOrder(@PathVariable int token, @RequestParam int bookId) {

@@ -8,4 +8,6 @@ import java.util.List;
 public interface OrderDao {
     List<Order> findByUser(User user);
     void saveOrder(Order order);
+
+    List<Order> findAll();
 }

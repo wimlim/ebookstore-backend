@@ -81,13 +81,46 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public JSONArray getAllOrders() {
+        JSONArray ordersJson = new JSONArray();
+        List<Order> allOrders = orderDao.findAll();
+
+        for (Order order : allOrders) {
+            JSONObject orderJson = new JSONObject();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
+            String timestamp = dateFormat.format(order.getCreateTime());
+
+            orderJson.put("id", order.getId());
+            orderJson.put("timestamp", timestamp);
+            orderJson.put("userId", order.getUser().getId());
+
+            JSONArray itemListJson = new JSONArray();
+            List<OrderItem> orderItems = order.getOrderItems();
+            for (OrderItem orderItem : orderItems) {
+                JSONObject itemJson = new JSONObject();
+                itemJson.put("bookId", orderItem.getBook().getId());
+                itemJson.put("title", orderItem.getBook().getTitle());
+                itemJson.put("num", orderItem.getNum());
+                itemJson.put("price", orderItem.getBook().getPrice());
+                itemListJson.add(itemJson);
+            }
+
+            orderJson.put("items", itemListJson);
+            ordersJson.add(orderJson);
+        }
+
+        return ordersJson;
+    }
+
+    @Override
     public boolean addOrderItem(int token, int bookId) {
         UserAuth userAuth = userAuthDao.findByToken(token);
         if (userAuth != null) {
             Book book = bookDao.findById(bookId);
-            if (book == null) {
+            if (book == null || book.getStock() <= 0) {
                 return false;
             }
+            bookDao.updateStock(bookId, 1);
 
             OrderItem orderItem = new OrderItem();
             orderItem.setBook(book);
