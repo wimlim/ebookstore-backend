@@ -25,6 +25,9 @@ public class UserServiceImpl implements UserService {
     public String login(String account, String password) {
         User user = userDao.findByAccountAndPassword(account, password);
         if (user != null) {
+            if (user.getIsBanned()) {
+                return "banned";
+            }
             UserAuth userAuth = user.getUserAuth();
             boolean isAdmin = user.isAdmin();
             return userAuth.getToken() + "," + isAdmin;

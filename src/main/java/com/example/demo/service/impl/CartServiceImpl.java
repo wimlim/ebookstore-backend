@@ -115,6 +115,11 @@ public class CartServiceImpl implements CartService {
             order.setCreateTime(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
             orderDao.saveOrder(order);
             for (CartItem cartItem : cartItems) {
+                Book book = cartItem.getBook();
+                if (book.getStock() < cartItem.getAmount()) {
+                    return false;
+                }
+                book.setStock(book.getStock() - cartItem.getAmount());
                 OrderItem orderItem = new OrderItem();
                 orderItem.setOrder(order);
                 orderItem.setBook(cartItem.getBook());
