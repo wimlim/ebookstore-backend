@@ -27,4 +27,17 @@ public class UserController {
     public String getUserProfile(@PathVariable("token") Long token) {
         return userService.getUserProfile(token);
     }
+
+    @GetMapping("/all")
+    public String getAllUsers() {
+        return userService.getAllUsers();
+    }
+    @PutMapping("/ban/{id}")
+    public String banUser(@PathVariable("id") Long userId) {
+        return userService.banUser(userId);
+    }
+    @PutMapping("/unban/{id}")
+    public String unbanUser(@PathVariable("id") Long userId) {
+        return userService.unbanUser(userId);
+    }
 }
