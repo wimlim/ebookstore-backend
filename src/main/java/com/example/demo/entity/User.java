@@ -21,6 +21,8 @@ public class User {
     private boolean is_banned;
     private String email;
 
+    @Lob
+    private byte[] avatar;
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private UserAuth userAuth;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
@@ -86,5 +88,8 @@ public class User {
 
     public void setIsAdmin(boolean b) {
         this.is_admin = b;
+    }
+    public byte[] getAvatar() {
+        return avatar;
     }
 }
