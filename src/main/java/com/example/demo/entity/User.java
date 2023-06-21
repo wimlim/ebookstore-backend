@@ -92,4 +92,24 @@ public class User {
     public byte[] getAvatar() {
         return avatar;
     }
+
+    public void setFirstName(String firstname) {
+        this.firstname = firstname;
+    }
+
+    public void setLastName(String lastname) {
+        this.lastname = lastname;
+    }
+
+    public void setTwitter(String twitter) {
+        this.twitter = twitter;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    public void setAvatar(byte[] avatar) {
+        this.avatar = avatar;
+    }
 }

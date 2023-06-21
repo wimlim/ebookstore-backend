@@ -4,6 +4,7 @@ import com.example.demo.entity.User;
 import com.example.demo.entity.UserAuth;
 import com.example.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -46,10 +47,40 @@ public class UserController {
         return userService.unbanUser(userId);
     }
     @PostMapping("/register") // 修改此处的路径为/register
-    public String register(@RequestBody Map<String, String> payload) { // 修改方法名为register
-        String username = payload.get("username"); // 修改获取用户名的键为"username"
-        String password = payload.get("password"); // 修改获取密码的键为"password"
-        String email = payload.get("email"); // 修改获取邮箱的键为"email"
-        return userService.register(username, password, email); // 调用注册的方法
+    public String register(@RequestBody Map<String, String> payload) {
+        String username = payload.get("username");
+        String password = payload.get("password");
+        String email = payload.get("email");
+        return userService.register(username, password, email);
+    }
+    @GetMapping("/avatar/{token}")
+    public ResponseEntity<byte[]> getUserAvatar(@PathVariable("token") Long token) {
+        byte[] avatar = userService.getUserAvatar(token);
+        if (avatar != null) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.IMAGE_JPEG);
+            return new ResponseEntity<>(avatar, headers, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+    @PutMapping("/profile/{token}")
+    public String updateUserProfile(
+            @PathVariable("token") Long token,
+            @RequestBody Map<String, String> payload
+    ) {
+        String firstname = payload.get("firstname");
+        String lastname = payload.get("lastname");
+        String twitter = payload.get("twitter");
+        String notes = payload.get("notes");
+
+        return userService.updateUserProfile(token, firstname, lastname, twitter, notes);
+    }
+    @PutMapping("/avatar/{token}")
+    public String updateUserAvatar(
+            @PathVariable("token") Long token,
+            @RequestBody byte[] avatar
+    ) {
+        return userService.updateUserAvatar(token, avatar);
     }
 }

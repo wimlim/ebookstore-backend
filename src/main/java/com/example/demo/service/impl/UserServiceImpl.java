@@ -112,4 +112,40 @@ public class UserServiceImpl implements UserService {
 
         return "Register successfully";
     }
+    @Override
+    public byte[] getUserAvatar(Long token) {
+        UserAuth userAuth = userAuthDao.findByToken(token.intValue());
+        if (userAuth != null) {
+            User user = userAuth.getUser();
+            return user.getAvatar();
+        }
+        return null;
+    }
+    @Override
+    public String updateUserProfile(Long token, String firstname, String lastname, String twitter, String notes) {
+        System.out.println("updateUserProfile");
+        UserAuth userAuth = userAuthDao.findByToken(token.intValue());
+        if (userAuth != null) {
+            User user = userAuth.getUser();
+            user.setFirstName(firstname);
+            user.setLastName(lastname);
+            user.setTwitter(twitter);
+            user.setNotes(notes);
+            userDao.save(user);
+            return "User profile updated successfully";
+        }
+        return "User not found";
+    }
+
+    @Override
+    public String updateUserAvatar(Long token, byte[] avatar) {
+        UserAuth userAuth = userAuthDao.findByToken(token.intValue());
+        if (userAuth != null) {
+            User user = userAuth.getUser();
+            user.setAvatar(avatar);
+            userDao.save(user);
+            return "User avatar updated successfully";
+        }
+        return "User not found";
+    }
 }

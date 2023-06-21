@@ -13,4 +13,9 @@ public interface UserService {
 
     String register(String username, String password, String email);
 
+    byte[] getUserAvatar(Long token);
+
+    String updateUserProfile(Long token, String firstname, String lastname, String twitter, String notes);
+
+    String updateUserAvatar(Long token, byte[] avatar);
 }
