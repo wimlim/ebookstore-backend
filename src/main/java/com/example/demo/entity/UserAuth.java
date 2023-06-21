@@ -24,4 +24,12 @@ public class UserAuth {
     public User getUser() {
         return user;
     }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public void setToken() {
+        this.token = (int) (Math.random() * 1000000);
+    }
 }

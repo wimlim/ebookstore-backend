@@ -20,4 +20,9 @@ public class UserAuthDaoImpl implements UserAuthDao {
     public UserAuth findByToken(int token) {
         return userAuthRepository.findByToken(token);
     }
+
+    @Override
+    public void save(UserAuth userAuth) {
+        userAuthRepository.save(userAuth);
+    }
 }

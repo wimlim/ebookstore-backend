@@ -34,4 +34,8 @@ public class UserDaoImpl implements UserDao {
     public void save(User user) {
         userRepository.save(user);
     }
+    @Override
+    public com.example.demo.entity.User findByAccount(String username) {
+        return userRepository.findByAccount(username);
+    }
 }

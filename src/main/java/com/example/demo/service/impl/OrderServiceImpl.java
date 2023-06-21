@@ -71,6 +71,7 @@ public class OrderServiceImpl implements OrderService {
                     itemListJson.add(itemJson);
                 }
 
+                timestampJson.put("id", itemList.get(0).getOrder().getId());
                 timestampJson.put("timestamp", timestamp);
                 timestampJson.put("items", itemListJson);
                 timestampsJson.add(timestampJson);

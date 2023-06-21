@@ -8,4 +8,6 @@ public interface UserService {
     String banUser(Long userId);
 
     String unbanUser(Long userId);
+
+    String register(String username, String password, String email);
 }

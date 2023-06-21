@@ -19,6 +19,7 @@ public class User {
     private String password;
     private boolean is_admin;
     private boolean is_banned;
+    private String email;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private UserAuth userAuth;
@@ -75,5 +76,15 @@ public class User {
     }
     public void setIsBanned(boolean is_banned) {
         this.is_banned = is_banned;
+    }
+    public String getEmail() {
+        return email;
+    }
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setIsAdmin(boolean b) {
+        this.is_admin = b;
     }
 }

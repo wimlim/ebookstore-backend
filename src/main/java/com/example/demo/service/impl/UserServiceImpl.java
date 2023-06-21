@@ -90,4 +90,26 @@ public class UserServiceImpl implements UserService {
         }
         return "User not found";
     }
+    @Override
+    public String register(String username, String password, String email) {
+        User user = userDao.findByAccount(username);
+        if (user != null) {
+            return "Username already exists";
+        }
+
+        user = new User();
+        user.setAccount(username);
+        user.setPassword(password);
+        user.setEmail(email);
+        user.setIsBanned(false);
+        user.setIsAdmin(false);
+        userDao.save(user);
+
+        UserAuth userAuth = new UserAuth();
+        userAuth.setUser(user);
+        userAuth.setToken(); // Generate a random token
+        userAuthDao.save(userAuth);
+
+        return "Register successfully";
+    }
 }

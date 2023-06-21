@@ -40,4 +40,11 @@ public class UserController {
     public String unbanUser(@PathVariable("id") Long userId) {
         return userService.unbanUser(userId);
     }
+    @PostMapping("/register") // 修改此处的路径为/register
+    public String register(@RequestBody Map<String, String> payload) { // 修改方法名为register
+        String username = payload.get("username"); // 修改获取用户名的键为"username"
+        String password = payload.get("password"); // 修改获取密码的键为"password"
+        String email = payload.get("email"); // 修改获取邮箱的键为"email"
+        return userService.register(username, password, email); // 调用注册的方法
+    }
 }
