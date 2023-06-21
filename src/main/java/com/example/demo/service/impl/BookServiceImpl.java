@@ -96,4 +96,19 @@ public class BookServiceImpl implements BookService {
         bookDao.delete(existingBook);
     }
 
+    @Override
+    public void addBook(String newBook) {
+        JSONObject bookJson = JSONObject.parseObject(newBook); // 使用fastjson将字符串转换为JSON对象
+
+        Book book = new Book();
+        book.setId(bookDao.getMaxId() + 1);
+        book.setTitle(bookJson.getString("title"));
+        book.setAuthor(bookJson.getString("author"));
+        book.setLanguage(bookJson.getString("language"));
+        book.setIsbn(bookJson.getInteger("isbn"));
+        book.setPrice(bookJson.getInteger("price"));
+        book.setStock(bookJson.getInteger("stock"));
+        book.setDescription(bookJson.getString("description"));
+        bookDao.save(book);
+    }
 }

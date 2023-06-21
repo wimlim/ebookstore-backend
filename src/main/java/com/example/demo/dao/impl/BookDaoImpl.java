@@ -72,4 +72,18 @@ public class BookDaoImpl implements BookDao {
         }
     }
 
+    @Override
+    public void save(Book book) {
+        bookRepository.save(book);
+    }
+    @Override
+    public int getMaxId() {
+        int maxId = 0;
+        for (Book book : bookRepository.findAll()) {
+            if (book.getId() > maxId) {
+                maxId = book.getId();
+            }
+        }
+        return maxId;
+    }
 }

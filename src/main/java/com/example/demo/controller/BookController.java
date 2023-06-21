@@ -61,4 +61,14 @@ public class BookController {
         }
     }
 
+    @PostMapping
+    public ResponseEntity<String> addBook(@RequestBody String newBook) {
+        try {
+            bookService.addBook(newBook);
+            return new ResponseEntity<>("Book added successfully", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("An error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }
