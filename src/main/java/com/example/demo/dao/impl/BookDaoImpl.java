@@ -65,8 +65,15 @@ public class BookDaoImpl implements BookDao {
 
     @Override
     public byte[] getCoverData(int id) {
-        Book book = bookRepository.findById(id).orElse(null);
-
+        Book book = null;
+        Object b = redisTemplate.opsForValue().get("book:" + id);
+        if (b == null) {
+            book = bookRepository.findById(id).orElse(null);
+            redisTemplate.opsForValue().set("book:" + id, JSON.toJSONString(book));
+        }
+        else {
+            book = JSON.parseObject(b.toString(), Book.class);
+        }
         if (book != null) {
             return book.getCover();
         }
