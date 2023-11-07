@@ -47,7 +47,7 @@ public class BookDaoImpl implements BookDao {
     @Override
     public Book findById(int id) {
         Book book = null;
-        System.out.println("Searching BOok: " + id + " in Redis");
+        System.out.println("Searching Book: " + id + " in Redis");
         Object b = redisTemplate.opsForValue().get("book:" + id);
         if (b == null) {
             System.out.println("Book " + id + " not found in Redis");
@@ -65,7 +65,7 @@ public class BookDaoImpl implements BookDao {
 
     @Override
     public byte[] getCoverData(int id) {
-        Book book = findById(id);
+        Book book = bookRepository.findById(id).orElse(null);
 
         if (book != null) {
             return book.getCover();
@@ -86,6 +86,7 @@ public class BookDaoImpl implements BookDao {
         existingBook.setDescription(updatedBook.getDescription());
 
         redisTemplate.opsForValue().set("book:" + existingBook.getId(), JSON.toJSONString(existingBook));
+        redisTemplate.delete("books");
         bookRepository.save(existingBook);
     }
 
@@ -93,6 +94,7 @@ public class BookDaoImpl implements BookDao {
     public void delete(Book book) {
         System.out.println("Deleting book: " + book.getId() + " from Redis");
         redisTemplate.delete("book:" + book.getId());
+        redisTemplate.delete("books");
         System.out.println("Deleting book: " + book.getId() + " from DB");
         bookRepository.delete(book);
     }
@@ -103,12 +105,16 @@ public class BookDaoImpl implements BookDao {
         if (book != null) {
             book.setStock(book.getStock() - i);
             redisTemplate.opsForValue().set("book:" + book.getId(), JSON.toJSONString(book));
+            redisTemplate.delete("books");
             bookRepository.save(book);
         }
     }
 
     @Override
     public void save(Book book) {
+        System.out.println("Saving book: " + book.getId() + " to Redis");
+        redisTemplate.opsForValue().set("book:" + book.getId(), JSON.toJSONString(book));
+        redisTemplate.delete("books");
         bookRepository.save(book);
     }
     @Override
