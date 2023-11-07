@@ -10,6 +10,8 @@ import java.util.List;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import javax.swing.plaf.synth.SynthTextAreaUI;
+
 @Service
 public class BookServiceImpl implements BookService {
 
@@ -101,14 +103,18 @@ public class BookServiceImpl implements BookService {
         JSONObject bookJson = JSONObject.parseObject(newBook); // 使用fastjson将字符串转换为JSON对象
 
         Book book = new Book();
-        book.setId(bookDao.getMaxId() + 1);
+        System.out.println("in addBook");
         book.setTitle(bookJson.getString("title"));
+        System.out.println("1");
         book.setAuthor(bookJson.getString("author"));
         book.setLanguage(bookJson.getString("language"));
+        System.out.println("2");
         book.setIsbn(bookJson.getInteger("isbn"));
+        System.out.println("3");
         book.setPrice(bookJson.getInteger("price"));
         book.setStock(bookJson.getInteger("stock"));
         book.setDescription(bookJson.getString("description"));
+        System.out.println("out addBook");
         bookDao.save(book);
     }
 }
