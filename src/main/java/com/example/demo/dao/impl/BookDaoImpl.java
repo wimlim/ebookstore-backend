@@ -81,22 +81,25 @@ public class BookDaoImpl implements BookDao {
     }
 
     @Override
+    @Transactional
     public void update(Book updatedBook) {
+        System.out.println("Updating book: " + updatedBook.getId() + " in Redis");
         redisTemplate.opsForValue().set("book:" + updatedBook.getId(), JSON.toJSONString(updatedBook));
         redisTemplate.delete("books");
         bookRepository.save(updatedBook);
     }
 
     @Override
+    @Transactional
     public void delete(Book book) {
         System.out.println("Deleting book: " + book.getId() + " from Redis");
         redisTemplate.delete("book:" + book.getId());
         redisTemplate.delete("books");
-        System.out.println("Deleting book: " + book.getId() + " from DB");
         bookRepository.delete(book);
     }
 
     @Override
+    @Transactional
     public void updateStock(int bookId, int i) {
         Book book = findById(bookId);
         if (book != null) {
@@ -108,6 +111,7 @@ public class BookDaoImpl implements BookDao {
     }
 
     @Override
+    @Transactional
     public void save(Book book) {
         System.out.println("Saving book: " + book.getId() + " to Redis");
         redisTemplate.opsForValue().set("book:" + book.getId(), JSON.toJSONString(book));

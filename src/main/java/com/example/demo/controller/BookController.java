@@ -41,7 +41,6 @@ public class BookController {
     @PutMapping("/{id}")
     public ResponseEntity<String> updateBook(@PathVariable int id, @RequestBody String updatedBook) {
         try {
-            System.out.println("update" + id);
             bookService.updateBook(id, updatedBook);
             return new ResponseEntity<>("Book updated successfully", HttpStatus.OK);
         } catch (IllegalArgumentException e) {
