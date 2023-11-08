@@ -60,6 +60,7 @@ public class CartServiceImpl implements CartService {
             List<Integer> list = new ArrayList<>();
             for (CartItem cartItem : cartItems) {
                 list.add(cartItem.getAmount());
+                list.add(cartItem.getBook().getPrice());
             }
             amount = restTemplate.postForObject(serviceUrl, list, Integer.class);
         }
