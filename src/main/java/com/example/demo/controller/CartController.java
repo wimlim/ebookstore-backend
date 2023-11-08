@@ -22,6 +22,11 @@ public class CartController {
         return cartService.getList(token);
     }
 
+    @GetMapping("/amount/{token}")
+    public int getAmount(@PathVariable("token") int token) {
+        return cartService.getAmount(token);
+    }
+
     @PutMapping("/{token}")
     public String updateCart(@PathVariable("token") int token, @RequestParam("bookId") int bookId, @RequestParam("amount") int amount) {
         if (cartService.updateItem(token, bookId, amount)) {

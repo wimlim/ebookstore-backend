@@ -10,18 +10,20 @@ import com.example.demo.dao.OrderItemDao;
 import com.example.demo.entity.*;
 import com.example.demo.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+import java.util.AbstractMap.SimpleEntry;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class CartServiceImpl implements CartService {
+    private String serviceUrl = "http://localhost:8081/getAmount";
 
     @Autowired
     private CartItemDAO cartItemDAO;
@@ -38,6 +40,8 @@ public class CartServiceImpl implements CartService {
     @Autowired
     private OrderItemDao orderItemDao;
     @Autowired
+    private RestTemplate restTemplate;
+    @Autowired
     public CartServiceImpl(CartItemDAO cartItemDAO, BookDao bookDao, UserAuthDao userAuthDao, OrderDao orderDao, OrderItemDao orderItemDao) {
         this.cartItemDAO = cartItemDAO;
         this.bookDao = bookDao;
@@ -46,6 +50,21 @@ public class CartServiceImpl implements CartService {
         this.orderItemDao = orderItemDao;
     }
 
+    @Override
+    public int getAmount(int token) {
+        UserAuth userAuth = userAuthDao.findByToken(token);
+        int amount = 0;
+        if (userAuth != null) {
+            List<CartItem> cartItems = cartItemDAO.findByUser(userAuth.getUser());
+            // get list of amount and price
+            List<Integer> list = new ArrayList<>();
+            for (CartItem cartItem : cartItems) {
+                list.add(cartItem.getAmount());
+            }
+            amount = restTemplate.postForObject(serviceUrl, list, Integer.class);
+        }
+        return amount;
+    }
     @Override
     public String getList(int token) {
         UserAuth userAuth = userAuthDao.findByToken(token);
