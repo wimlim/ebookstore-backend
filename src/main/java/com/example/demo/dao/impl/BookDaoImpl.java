@@ -82,19 +82,9 @@ public class BookDaoImpl implements BookDao {
 
     @Override
     public void update(Book updatedBook) {
-        Book existingBook = findById(updatedBook.getId());
-
-        existingBook.setTitle(updatedBook.getTitle());
-        existingBook.setAuthor(updatedBook.getAuthor());
-        existingBook.setLanguage(updatedBook.getLanguage());
-        existingBook.setIsbn(updatedBook.getIsbn());
-        existingBook.setPrice(updatedBook.getPrice());
-        existingBook.setStock(updatedBook.getStock());
-        existingBook.setDescription(updatedBook.getDescription());
-
-        redisTemplate.opsForValue().set("book:" + existingBook.getId(), JSON.toJSONString(existingBook));
+        redisTemplate.opsForValue().set("book:" + updatedBook.getId(), JSON.toJSONString(updatedBook));
         redisTemplate.delete("books");
-        bookRepository.save(existingBook);
+        bookRepository.save(updatedBook);
     }
 
     @Override
