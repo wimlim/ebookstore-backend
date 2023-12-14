@@ -57,12 +57,15 @@ public class CartServiceImpl implements CartService {
         if (userAuth != null) {
             List<CartItem> cartItems = cartItemDAO.findByUser(userAuth.getUser());
             // get list of amount and price
-            List<Integer> list = new ArrayList<>();
             for (CartItem cartItem : cartItems) {
-                list.add(cartItem.getAmount());
-                list.add(cartItem.getBook().getPrice());
+                amount += cartItem.getAmount() * cartItem.getBook().getPrice();
             }
-            amount = restTemplate.postForObject(serviceUrl, list, Integer.class);
+//            List<Integer> list = new ArrayList<>();
+//            for (CartItem cartItem : cartItems) {
+//                list.add(cartItem.getAmount());
+//                list.add(cartItem.getBook().getPrice());
+//            }
+//            amount = restTemplate.postForObject(serviceUrl, list, Integer.class);
         }
         return amount;
     }
