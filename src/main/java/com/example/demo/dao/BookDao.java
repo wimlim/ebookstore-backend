@@ -7,6 +7,8 @@ import java.util.List;
 public interface BookDao {
     List<Book> findAll();
 
+    List<Book> findByTitle(String title);
+
     Book findById(int id);
 
     byte[] getCoverData(int id);

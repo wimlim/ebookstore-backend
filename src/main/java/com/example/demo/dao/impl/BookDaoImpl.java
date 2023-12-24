@@ -45,6 +45,12 @@ public class BookDaoImpl implements BookDao {
     }
 
     @Override
+    public List<Book> findByTitle(String title) {
+        List<Book> books = bookRepository.findByTitleContaining(title);
+        return books;
+    }
+
+    @Override
     public Book findById(int id) {
         Book book = null;
         System.out.println("Searching Book: " + id + " in Redis");
