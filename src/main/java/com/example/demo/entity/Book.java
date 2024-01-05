@@ -16,9 +16,6 @@ public class Book {
     private int stock;
     private String description;
 
-    @Lob
-    private byte[] cover;
-
     public int getId() {
         return id;
     }
@@ -83,11 +80,4 @@ public class Book {
         this.description = description;
     }
 
-    public byte[] getCover() {
-        return cover;
-    }
-
-    public void setCover(byte[] cover) {
-        this.cover = cover;
-    }
 }
