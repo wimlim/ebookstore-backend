@@ -9,6 +9,8 @@ public interface BookDao {
 
     List<Book> findByTitle(String title);
 
+    List<Book> findByType(String type);
+
     Book findById(int id);
 
     byte[] getCoverData(int id);

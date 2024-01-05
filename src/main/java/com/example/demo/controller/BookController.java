@@ -37,6 +37,10 @@ public class BookController {
 
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+    @GetMapping("/type/{type}")
+    public String getBooksByType(@PathVariable String type) {
+        return bookService.getBooksByType(type);
+    }
 
     @PutMapping("/{id}")
     public ResponseEntity<String> updateBook(@PathVariable int id, @RequestBody String updatedBook) {

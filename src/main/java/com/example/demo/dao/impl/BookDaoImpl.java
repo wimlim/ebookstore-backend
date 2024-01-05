@@ -5,13 +5,17 @@ import com.alibaba.fastjson.JSON;
 import com.example.demo.dao.BookDao;
 import com.example.demo.entity.Book;
 import com.example.demo.entity.BookCover;
+import com.example.demo.entity.BookType;
 import com.example.demo.repository.BookCoverRepository;
+import com.example.demo.repository.BookTypeRepository;
 import com.example.demo.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.redis.core.RedisTemplate;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 @Transactional
@@ -23,11 +27,13 @@ public class BookDaoImpl implements BookDao {
     private final BookRepository bookRepository;
 
     private final BookCoverRepository bookCoverRepository;
+    private final BookTypeRepository bookTypeRepository;
 
     @Autowired
-    public BookDaoImpl(BookRepository bookRepository, BookCoverRepository bookCoverRepository) {
+    public BookDaoImpl(BookRepository bookRepository, BookCoverRepository bookCoverRepository, BookTypeRepository bookTypeRepository) {
         this.bookRepository = bookRepository;
         this.bookCoverRepository = bookCoverRepository;
+        this.bookTypeRepository = bookTypeRepository;
     }
 
     @Override
@@ -51,6 +57,34 @@ public class BookDaoImpl implements BookDao {
     @Override
     public List<Book> findByTitle(String title) {
         List<Book> books = bookRepository.findByTitleContaining(title);
+        return books;
+    }
+    @Override
+    public List<Book> findByType(String type) {
+        List<BookType> bookTypes = bookTypeRepository.findRelatedBookTypesWithinTwoSteps(type);
+        List<Integer> bookIds = new ArrayList<>();
+        List<Book> books = new ArrayList<>();
+        System.out.println("Searching books of type: " + type);
+        BookType oriBookType = bookTypeRepository.findByType(type);
+        if (oriBookType != null) {
+            List<Integer> ids = oriBookType.getIds();
+            for (Integer id : ids) {
+                if (!bookIds.contains(id)) {
+                    bookIds.add(id);
+                    books.add(bookRepository.findById(id).orElse(null));
+                }
+            }
+        }
+        for (BookType bookType : bookTypes) {
+            List<Integer> ids = bookType.getIds();
+            System.out.println(bookType.getType());
+            for (Integer id : ids) {
+                if (!bookIds.contains(id)) {
+                    bookIds.add(id);
+                    books.add(bookRepository.findById(id).orElse(null));
+                }
+            }
+        }
         return books;
     }
 

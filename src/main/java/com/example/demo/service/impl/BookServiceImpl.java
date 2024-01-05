@@ -44,7 +44,27 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public List<Book> getBooksByTitle(String title) {
+        // graphql query
         return bookDao.findByTitle(title);
+    }
+
+    @Override
+    public String getBooksByType(String type) {
+        List<Book> books = bookDao.findByType(type);
+        JSONArray booksJson = new JSONArray();
+        for (Book book : books) {
+            JSONObject bookJson = new JSONObject();
+            bookJson.put("id", book.getId());
+            bookJson.put("title", book.getTitle());
+            bookJson.put("author", book.getAuthor());
+            bookJson.put("language", book.getLanguage());
+            bookJson.put("isbn", book.getIsbn());
+            bookJson.put("price", book.getPrice());
+            bookJson.put("stock", book.getStock());
+            bookJson.put("description", book.getDescription());
+            booksJson.add(bookJson);
+        }
+        return booksJson.toJSONString();
     }
 
     @Override
