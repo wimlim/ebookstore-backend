@@ -2,9 +2,10 @@ package com.example.demo.dao.impl;
 
 import com.alibaba.fastjson.JSON;
 
-import com.alibaba.fastjson.JSONObject;
 import com.example.demo.dao.BookDao;
 import com.example.demo.entity.Book;
+import com.example.demo.entity.BookCover;
+import com.example.demo.repository.BookCoverRepository;
 import com.example.demo.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -21,9 +22,12 @@ public class BookDaoImpl implements BookDao {
 
     private final BookRepository bookRepository;
 
+    private final BookCoverRepository bookCoverRepository;
+
     @Autowired
-    public BookDaoImpl(BookRepository bookRepository) {
+    public BookDaoImpl(BookRepository bookRepository, BookCoverRepository bookCoverRepository) {
         this.bookRepository = bookRepository;
+        this.bookCoverRepository = bookCoverRepository;
     }
 
     @Override
@@ -71,17 +75,9 @@ public class BookDaoImpl implements BookDao {
 
     @Override
     public byte[] getCoverData(int id) {
-        Book book = null;
-        Object b = redisTemplate.opsForValue().get("book:" + id);
-        if (b == null) {
-            book = bookRepository.findById(id).orElse(null);
-            redisTemplate.opsForValue().set("book:" + id, JSON.toJSONString(book));
-        }
-        else {
-            book = JSON.parseObject(b.toString(), Book.class);
-        }
-        if (book != null) {
-            return book.getCover();
+        BookCover bookCover = bookCoverRepository.findByBookId(id);
+        if (bookCover != null) {
+            return bookCover.getCover();
         }
         return null;
     }
