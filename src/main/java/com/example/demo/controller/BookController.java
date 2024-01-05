@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.service.BookService;
+import com.example.demo.service.KeywordCountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -14,6 +15,8 @@ public class BookController {
 
     @Autowired
     private BookService bookService;
+    @Autowired
+    private KeywordCountService keywordCountService;
 
     @GetMapping
     public String getBooks() {
@@ -36,6 +39,10 @@ public class BookController {
         }
 
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+    @GetMapping("/spark")
+    public String getSpark() {
+        return keywordCountService.countKeywords("D:\\UserData\\Desktop\\ebookstore\\ebookstore-backend\\data").toString();
     }
     @GetMapping("/type/{type}")
     public String getBooksByType(@PathVariable String type) {
