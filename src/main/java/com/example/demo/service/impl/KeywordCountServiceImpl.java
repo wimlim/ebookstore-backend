@@ -7,10 +7,8 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class KeywordCountServiceImpl implements KeywordCountService {
@@ -26,15 +24,25 @@ public class KeywordCountServiceImpl implements KeywordCountService {
         SparkConf conf = new SparkConf().setAppName("E-BookStore Keyword Count").setMaster("local[*]");
         JavaSparkContext sc = new JavaSparkContext(conf);
 
-        JavaRDD<String> textData = sc.textFile(filePath + "/*.txt").cache();
+        String textContent = sc.textFile(filePath + "/*.txt")
+                .map(line -> line.toLowerCase().replaceAll("[^a-zA-Z0-9\\s]", " "))
+                .collect()
+                .stream()
+                .collect(Collectors.joining(" "));
+
+        JavaRDD<String> words = sc.parallelize(Collections.singletonList(textContent))
+                .flatMap(content -> Arrays.asList(content.split("\\s+")).iterator());
 
         Map<String, Long> keywordCounts = new HashMap<>();
         for (String keyword : keywords) {
-            long count = textData.filter((Function<String, Boolean>) line -> line.contains(keyword)).count();
+            String pattern = "\\b" + keyword + "\\b";
+            long count = words.filter(word -> word.matches(pattern)).count();
             keywordCounts.put(keyword, count);
         }
 
         sc.close();
         return keywordCounts;
     }
+
+
 }
