@@ -1,5 +1,7 @@
 package com.example.demo.controller;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.example.demo.service.BookService;
 import com.example.demo.service.KeywordCountService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +10,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpHeaders;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/books")
@@ -42,7 +46,16 @@ public class BookController {
     }
     @GetMapping("/spark")
     public String getSpark() {
-        return keywordCountService.countKeywords("D:\\UserData\\Desktop\\ebookstore\\ebookstore-backend\\data").toString();
+        Map<String, Long> map = keywordCountService.countKeywords("D:\\UserData\\Desktop\\ebookstore\\ebookstore-backend\\data");
+        // turn into json string
+        JSONArray booksJson = new JSONArray();
+        for (Map.Entry<String, Long> entry : map.entrySet()) {
+            JSONObject bookJson = new JSONObject();
+            bookJson.put("keyword", entry.getKey());
+            bookJson.put("count", entry.getValue());
+            booksJson.add(bookJson);
+        }
+        return booksJson.toJSONString();
     }
     @GetMapping("/type/{type}")
     public String getBooksByType(@PathVariable String type) {
