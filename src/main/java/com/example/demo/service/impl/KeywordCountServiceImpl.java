@@ -1,16 +1,16 @@
 package com.example.demo.service.impl;
 
 import com.example.demo.service.KeywordCountService;
-import org.apache.spark.api.java.function.FilterFunction;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.SparkSession;
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.Function;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class KeywordCountServiceImpl implements KeywordCountService {
@@ -23,18 +23,18 @@ public class KeywordCountServiceImpl implements KeywordCountService {
 
     @Override
     public Map<String, Long> countKeywords(String filePath) {
-//        SparkSession spark = SparkSession.builder().appName("E-BookStore Keyword Count").getOrCreate();
-//
-//        Dataset<String> textData = spark.read().textFile(filePath + "/*.txt").cache();
-//
-//        Map<String, Long> keywordCounts = keywords.stream()
-//                .collect(Collectors.toMap(keyword -> keyword, keyword ->
-//                        textData.filter((FilterFunction<String>) line -> line.contains(keyword)).count()));
-//
-//        spark.stop();
-//        return keywordCounts;
-        Map<String, Long> map = new HashMap<String, Long>();
-        map.put("galaxy", 1L);
-        return map;
+        SparkConf conf = new SparkConf().setAppName("E-BookStore Keyword Count").setMaster("local[*]");
+        JavaSparkContext sc = new JavaSparkContext(conf);
+
+        JavaRDD<String> textData = sc.textFile(filePath + "/*.txt").cache();
+
+        Map<String, Long> keywordCounts = new HashMap<>();
+        for (String keyword : keywords) {
+            long count = textData.filter((Function<String, Boolean>) line -> line.contains(keyword)).count();
+            keywordCounts.put(keyword, count);
+        }
+
+        sc.close();
+        return keywordCounts;
     }
 }

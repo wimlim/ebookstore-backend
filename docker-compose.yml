@@ -8,14 +8,21 @@ services:
       - "8080:8080"
     depends_on:
       - mysql
+      - mongodb
+      - neo4j
       - redis
       - kafka
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/bookstore
+      SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: sql.14159265
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/bookstore
+      SPRING_NEO4J_URI: bolt://neo4j:7687
+      SPRING_NEO4J_AUTHENTICATION_USERNAME: neo4j
+      SPRING_NEO4J_AUTHENTICATION_PASSWORD: 14159265
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092  # 指向Kafka服务
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 
   mysql:
     image: mysql:8.0.35
@@ -25,6 +32,19 @@ services:
       MYSQL_ROOT_PASSWORD: sql.14159265
     ports:
       - "3306:3306"
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+
+  neo4j:
+    image: neo4j:latest
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      NEO4J_AUTH: neo4j/14159265
 
   redis:
     image: redis:alpine
