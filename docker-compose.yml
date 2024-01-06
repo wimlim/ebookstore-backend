@@ -11,27 +11,20 @@ services:
       - redis
       - kafka
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ebookstore
-      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/bookstore
       SPRING_DATASOURCE_PASSWORD: sql.14159265
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092  # 指向Kafka服务
 
   mysql:
-    image: mysql:8.0.32
+    image: mysql:8.0.35
     command: --lower_case_table_names=1
     environment:
-      MYSQL_DATABASE: ebookstore
-      MYSQL_USER: root
-      MYSQL_PASSWORD: sql.14159265
+      MYSQL_DATABASE: bookstore
       MYSQL_ROOT_PASSWORD: sql.14159265
     ports:
       - "3306:3306"
-    volumes:
-      - type: bind
-        source: C:/code/mysql-8.0.32-winx64/data
-        target: /var/lib/mysql
 
   redis:
     image: redis:alpine
