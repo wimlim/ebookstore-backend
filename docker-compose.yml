@@ -32,6 +32,8 @@ services:
       MYSQL_ROOT_PASSWORD: sql.14159265
     ports:
       - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
 
   mongodb:
     image: mongo:latest
@@ -69,3 +71,6 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
     depends_on:
       - zookeeper
+
+volumes:
+  mysql-data:
